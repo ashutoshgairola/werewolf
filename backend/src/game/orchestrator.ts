@@ -98,7 +98,10 @@ export function startGame(roomCode: string, io: Server): { error?: string } {
 
 export async function advancePhase(roomCode: string, io: Server): Promise<void> {
   const game = store.getGame(roomCode)
-  if (!game) return
+  if (!game || game.phase === 'GAME_OVER') return
+
+  // Null out phaseEndsAt immediately to prevent double-advance if timer ticks overlap
+  game.phaseEndsAt = null
 
   const now = Date.now()
   const room = store.getRoom(roomCode)
