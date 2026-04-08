@@ -2,6 +2,9 @@ import { pool } from './client'
 import type { GameState } from '../shared/types'
 
 export async function writeGameResult(game: GameState): Promise<void> {
+  if (game.winner === null) {
+    throw new Error('writeGameResult called before game winner was determined')
+  }
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
