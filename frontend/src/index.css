@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Courier+Prime&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'IM Fell English', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-parchment text-ink min-h-screen;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-parchment-dark;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-wood-light rounded-full;
+  }
+}
+
+@layer utilities {
+  /* Card flip perspective container */
+  .perspective {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  /* Night phase gradient */
+  .bg-night {
+    background: linear-gradient(180deg, #0f0c29 0%, #1E1B4B 50%, #24243e 100%);
+  }
+
+  /* Dawn gradient */
+  .bg-dawn {
+    background: linear-gradient(180deg, #1E1B4B 0%, #7c2d12 40%, #f59e0b 100%);
+  }
+
+  /* Day gradient */
+  .bg-day {
+    background: linear-gradient(180deg, #bfdbfe 0%, #eff6ff 100%);
+  }
+}
