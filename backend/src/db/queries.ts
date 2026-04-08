@@ -1,7 +1,7 @@
 import { pool } from './client'
-import type { GameState, RoomState } from '../shared/types'
+import type { GameState } from '../shared/types'
 
-export async function writeGameResult(game: GameState, room: RoomState): Promise<void> {
+export async function writeGameResult(game: GameState): Promise<void> {
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
