@@ -1,0 +1,22 @@
+node_modules
+
+.env
+
+# Ignore log files
+logs
+*.log
+
+# Ignore build output
+dist
+build
+
+# Ignore IDE files
+.idea
+.vscode
+.claude
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+docs
