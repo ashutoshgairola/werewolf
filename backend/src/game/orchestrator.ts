@@ -276,6 +276,13 @@ async function endGame(roomCode: string, game: GameState, winner: Faction | null
     })
   }
 
+  // Mark surviving players' outcomes before deleting game state
+  for (const p of game.players) {
+    if (p.isAlive && p.outcome === null) {
+      p.outcome = 'survived'
+    }
+  }
+
   // Return room to LOBBY
   store.deleteGame(roomCode)
   const room = store.getRoom(roomCode)
@@ -338,6 +345,8 @@ function broadcastWolfTally(game: GameState, roomCode: string, io: Server): void
 }
 
 function fillMissingWolfVotes(game: GameState): void {
+  if (game.round === 1) return  // Night 1 is peaceful — wolves cannot kill
+
   const wolves = [...game.roles.entries()]
     .filter(([pid, role]) => role === 'werewolf' && game.alive.has(pid))
     .map(([pid]) => pid)
