@@ -223,6 +223,7 @@ export async function advancePhase(roomCode: string, io: Server): Promise<void> 
       game.phaseStartedAt = now
       game.phaseEndsAt = now + 5_000
 
+      // Send final tally before phase change so clients have it when rendering result screen
       io.to(roomCode).emit('game:vote_update', { tallies: resolution.voteCounts })
       io.to(roomCode).emit('game:phase_change', {
         phase: 'DAY_RESULT',
@@ -268,10 +269,12 @@ async function endGame(roomCode: string, game: GameState, winner: Faction | null
   })
   logger.info({ roomCode, winner, round: game.round }, 'Game over')
 
-  // Persist to DB (non-blocking — failure must not block lobby return)
-  writeGameResult(game).catch(err => {
-    logger.error({ err, roomCode }, 'Failed to write game result to DB')
-  })
+  // Persist to DB (non-blocking — failure must not block lobby return; abandoned games with null winner are not persisted)
+  if (winner !== null) {
+    writeGameResult(game).catch(err => {
+      logger.error({ err, roomCode }, 'Failed to write game result to DB')
+    })
+  }
 
   // Return room to LOBBY
   store.deleteGame(roomCode)
