@@ -20,17 +20,17 @@ export function registerRoomEvents(io: Server, socket: Socket): void {
       // Update connection status in room
       const rp = [...room.players, ...room.spectators].find(p => p.playerId === playerId)
       if (rp) { rp.connectionStatus = 'connected'; rp.disconnectedAt = null }
-    }
 
-    const game = store.getGame(existingRoomCode)
-    if (game !== undefined) {
-      // Update connection status in game
-      const gp = game.players.find(p => p.playerId === playerId)
-      if (gp) { gp.connectionStatus = 'connected'; gp.disconnectedAt = null; gp.isAfk = false }
-      // Send filtered state snapshot
-      socket.emit('game:state_snapshot', buildGameSnapshot(game, playerId))
-    } else if (room) {
-      socket.emit('room:state', roomService.serializeRoom(room))
+      const game = store.getGame(existingRoomCode)
+      if (game) {
+        // Update connection status in game
+        const gp = game.players.find(p => p.playerId === playerId)
+        if (gp) { gp.connectionStatus = 'connected'; gp.disconnectedAt = null; gp.isAfk = false }
+        // Send filtered state snapshot
+        socket.emit('game:state_snapshot', buildGameSnapshot(game, playerId))
+      } else {
+        socket.emit('room:state', roomService.serializeRoom(room))
+      }
     }
 
     // Refresh JWT if close to expiry
