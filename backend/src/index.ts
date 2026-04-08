@@ -31,7 +31,13 @@ const gameDurationHistogram = new Histogram({
 const app = express()
 
 app.use(express.json())
-app.use(rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false }))
+app.use(rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.path === '/health' || req.path === '/metrics',
+}))
 
 // Health
 app.get('/health', (_req, res) => {
@@ -91,7 +97,4 @@ httpServer.listen(PORT, () => {
   startTimerLoop(io)
 })
 
-// Export metrics for module scope (used in future orchestrator)
-void gameDurationHistogram
-
-export { io }
+export { io, gameDurationHistogram }
