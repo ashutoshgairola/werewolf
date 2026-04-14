@@ -1,6 +1,10 @@
+// frontend/src/components/game/PhaseHeader.tsx
+import { useEffect, useRef } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { PHASE_INFO } from '@/types/game'
 import { CountdownTimer } from '@/components/shared/CountdownTimer'
+import { useCountdown } from '@/hooks/useCountdown'
+import { playSound } from '@/hooks/useSoundManager'
 
 interface PhaseHeaderProps {
   totalSeconds?: number
@@ -10,13 +14,33 @@ export function PhaseHeader({ totalSeconds }: PhaseHeaderProps) {
   const phase = useGameStore((s) => s.phase)
   const round = useGameStore((s) => s.round)
   const phaseEndsAt = useGameStore((s) => s.phaseEndsAt)
+  const secondsLeft = useCountdown(phaseEndsAt)
+  const lastTickRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (secondsLeft <= 0) return
+    if (secondsLeft > 10) {
+      lastTickRef.current = null
+      return
+    }
+    // Only play once per integer-second change
+    if (lastTickRef.current === secondsLeft) return
+    lastTickRef.current = secondsLeft
+
+    playSound('timer_tick')
+
+    // At <= 5s, schedule a second tick mid-second to double the rate
+    if (secondsLeft <= 5) {
+      const mid = setTimeout(() => playSound('timer_tick'), 500)
+      return () => clearTimeout(mid)
+    }
+  }, [secondsLeft])
 
   if (!phase) return null
-
   const info = PHASE_INFO[phase]
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-parchment-light border-b border-wood/30">
+    <div className="flex-1 flex items-center justify-between px-4 py-3 bg-parchment-light border-b border-wood/30">
       <div className="flex items-center gap-2">
         <span className="text-xl">{info?.icon}</span>
         <div>
