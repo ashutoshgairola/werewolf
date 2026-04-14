@@ -1,5 +1,5 @@
 // frontend/src/theme/RoleAtmosphere.tsx
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { useRoleTheme } from '@/hooks/useRoleTheme'
 
@@ -27,10 +27,21 @@ export function RoleAtmosphere() {
   const phase = useGameStore((s) => s.phase)
   const theme = useRoleTheme()
 
-  // Don't render before role is revealed or after game over fades
+  // Reactive mobile check — updates on window resize
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 640
+  )
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mql = window.matchMedia('(max-width: 639px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+
+  // Don't render before role is revealed or in lobby
   const visible = role !== null && phase !== null && phase !== 'LOBBY'
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
   const particleCount = isMobile ? 8 : 16
 
   const particles = useMemo(
@@ -38,10 +49,10 @@ export function RoleAtmosphere() {
     [role, particleCount, theme]
   )
 
-  // Pick particle animation based on role
-  const particleAnimation = role === 'seer'
-    ? 'particle-twinkle'
-    : 'particle-float'
+  // Use full static class strings so Tailwind includes them in the bundle
+  const particleAnimationClass = role === 'seer'
+    ? 'animate-particle-twinkle'
+    : 'animate-particle-float'
 
   if (!visible || !theme) return null
 
@@ -53,7 +64,7 @@ export function RoleAtmosphere() {
       style={{ zIndex: 0, opacity: fadeOut ? 0 : 1, transition: 'opacity 2s ease-out' }}
       aria-hidden="true"
     >
-      {/* Background gradient — two layers for crossfade on role change */}
+      {/* Background gradient */}
       <div
         className="absolute inset-0 animate-atmosphere-fade-in"
         style={{
@@ -78,7 +89,7 @@ export function RoleAtmosphere() {
       {particles.map((p, i) => (
         <div
           key={i}
-          className={`absolute rounded-full animate-${particleAnimation}`}
+          className={`absolute rounded-full ${particleAnimationClass}`}
           style={{
             left: p.left,
             top: p.top,
@@ -91,14 +102,9 @@ export function RoleAtmosphere() {
         />
       ))}
 
-      {/* Flavour text — desktop: top banner below PhaseHeader; mobile: bottom-fixed */}
+      {/* Flavour text — desktop: below PhaseHeader (~52px); mobile: bottom-fixed */}
       <div
-        className={[
-          'absolute left-0 right-0 px-4 py-3 animate-flavour-slide-up',
-          'sm:top-[52px] sm:bottom-auto',  // desktop: below the ~52px PhaseHeader
-          'bottom-0 sm:top-auto',          // mobile: pinned to bottom
-          'bg-black/40 backdrop-blur-sm',
-        ].join(' ')}
+        className="absolute left-0 right-0 px-4 py-3 animate-flavour-slide-up bg-black/40 backdrop-blur-sm bottom-0 sm:bottom-auto sm:top-[52px]"
       >
         <p
           className="font-body italic text-center text-sm sm:text-base"
