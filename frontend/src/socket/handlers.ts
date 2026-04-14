@@ -14,6 +14,8 @@ import type {
   GamePhase,
 } from '@/types/game'
 import { ErrorCodes } from '@/types/game'
+import { playSound } from '@/hooks/useSoundManager'
+import { PHASE_SOUNDS, GAME_OVER_SOUNDS } from '@/theme/roleThemes'
 
 let handlersRegistered = false
 
@@ -50,8 +52,28 @@ export function registerHandlers(socket: Socket): void {
   // ── Game events ──────────────────────────────────────────────────────────────
 
   socket.on('game:started', () => {
-    // Clear any previous game state; role and phase arrive via subsequent events
-    useGameStore.getState().clearGame()
+    // Backend emits game:role_assigned BEFORE game:started, so we must NOT
+    // call clearGame() here — that would wipe the role that was just set.
+    // Instead, initialize alive from current room players (all start alive)
+    // and reset only per-game counters/logs.
+    const roomPlayers = useRoomStore.getState().players
+    useGameStore.setState({
+      alive: roomPlayers.map((p) => p.playerId),
+      dayVotes: {},
+      dayVoteTallies: {},
+      wolfTally: {},
+      skipVote: { skipCount: 0, aliveCount: roomPlayers.length },
+      dawnInfo: null,
+      lynchedPlayerId: null,
+      seerResults: [],
+      seerInspectedTargets: [],
+      doctorLastProtected: null,
+      chatLogs: { day: [], wolf: [], ghost: [], system: [] },
+      winner: null,
+      roles: {},
+      players: [],
+      round: 1,
+    })
   })
 
   socket.on('game:role_assigned', ({ role, knownAllies }: { role: Role; knownAllies?: string[] }) => {
@@ -62,8 +84,9 @@ export function registerHandlers(socket: Socket): void {
     'game:phase_change',
     ({ phase, endsAt, round }: { phase: string; endsAt: number | null; round: number }) => {
       useGameStore.getState().setPhase(phase as GamePhase, endsAt, round)
-      // Mark room as IN_GAME
       useRoomStore.setState({ status: 'IN_GAME' })
+      const soundKey = PHASE_SOUNDS[phase]
+      if (soundKey) playSound(soundKey)
     }
   )
 
@@ -84,6 +107,7 @@ export function registerHandlers(socket: Socket): void {
           useGameStore.getState().setRoles({ ...roles, [killedPlayerId]: role })
         }
       }
+      playSound(killedPlayerId ? 'death_toll' : 'dawn_bell')
     }
   )
 
@@ -96,10 +120,15 @@ export function registerHandlers(socket: Socket): void {
       if (role) {
         useGameStore.getState().setRoles({ ...roles, [playerId]: role })
       }
+      playSound('elimination')
     }
   )
 
   socket.on('game:vote_update', ({ tallies }: { tallies: Record<string, number> }) => {
+    const prevTallies = useGameStore.getState().dayVoteTallies
+    const prevTotal = Object.values(prevTallies).reduce((a, b) => a + b, 0)
+    const newTotal = Object.values(tallies).reduce((a, b) => a + b, 0)
+    if (newTotal > prevTotal) playSound('vote_thud')
     useGameStore.getState().setDayVoteTallies(tallies)
   })
 
@@ -127,6 +156,7 @@ export function registerHandlers(socket: Socket): void {
     }) => {
       useGameStore.getState().setGameOver(winner, finalRoles, ghostChatLog)
       useRoomStore.setState({ status: 'GAME_OVER' })
+      if (winner) playSound(GAME_OVER_SOUNDS[winner])
     }
   )
 
