@@ -53,4 +53,8 @@ export const socketEvents = {
   sendChat: (channel: ChatChannel, text: string) => {
     getSocket().emit('chat:message', { channel, text })
   },
+
+  returnToLobby: () => {
+    getSocket().emit('room:return_to_lobby')
+  },
 }

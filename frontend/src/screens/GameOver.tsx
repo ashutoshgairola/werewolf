@@ -98,7 +98,7 @@ export default function GameOver() {
       <div className="flex flex-col gap-3 w-full max-w-xs">
         {isHost && (
           <button
-            onClick={() => socketEvents.leaveRoom()}
+            onClick={() => socketEvents.returnToLobby()}
             className="w-full bg-white/20 hover:bg-white/30 text-white font-tavern py-3 rounded-xl transition-colors"
           >
             🏠 Return to Lobby

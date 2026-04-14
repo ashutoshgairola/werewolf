@@ -123,6 +123,25 @@ export function registerRoomEvents(io: Server, socket: Socket): void {
     io.to(roomCode).emit('room:settings_updated', { settings: room.settings })
   })
 
+  // ── room:return_to_lobby ─────────────────────────────────────────────────────
+  socket.on('room:return_to_lobby', () => {
+    const roomCode = store.getPlayerRoom(playerId)
+    if (!roomCode) return
+    const room = store.getRoom(roomCode)
+    if (!room) return
+    if (room.hostId !== playerId) {
+      socket.emit('error', { code: 'NOT_HOST', message: 'Only the host can return to lobby' })
+      return
+    }
+    if (room.status !== 'GAME_OVER') return
+
+    room.status = 'LOBBY'
+    for (const p of room.players) p.isReady = false
+    room.lastActivityAt = Date.now()
+    io.to(roomCode).emit('room:state', roomService.serializeRoom(room))
+    logger.info({ playerId, roomCode }, 'Room returned to lobby')
+  })
+
   // ── disconnect ───────────────────────────────────────────────────────────
   socket.on('disconnect', () => {
     const roomCode = store.getPlayerRoom(playerId)
@@ -167,11 +186,14 @@ function buildGameSnapshot(game: GameState, playerId: string) {
     roomCode: game.roomCode,
     phase: game.phase,
     round: game.round,
+    phaseStartedAt: game.phaseStartedAt,
     phaseEndsAt: game.phaseEndsAt,
     players: game.players,
     alive: [...game.alive],
     roles: rolesVisible,
     dayVotes: Object.fromEntries(game.dayVotes),
+    doctorLastProtected: role === 'doctor' ? game.doctorLastProtected : null,
+    seerInspectedTargets: role === 'seer' ? [...game.seerInspectedTargets] : [],
     winner: game.winner,
     chatLogs: {
       day: game.chatLogs.day,

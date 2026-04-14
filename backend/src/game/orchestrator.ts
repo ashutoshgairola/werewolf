@@ -286,12 +286,11 @@ async function endGame(roomCode: string, game: GameState, winner: Faction | null
     }
   }
 
-  // Return room to LOBBY
+  // Delete game but keep room at GAME_OVER — host will explicitly return to lobby
   store.deleteGame(roomCode)
   const room = store.getRoom(roomCode)
   if (room) {
-    room.status = 'LOBBY'
-    for (const p of room.players) p.isReady = false
+    room.status = 'GAME_OVER'
   }
 }
 

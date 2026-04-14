@@ -26,6 +26,11 @@
   }
 }
 
+@keyframes dawn-rise {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 @layer utilities {
   /* Card flip perspective container */
   .perspective {

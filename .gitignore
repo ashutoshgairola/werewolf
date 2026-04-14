@@ -54,3 +54,5 @@ docs/
 *.pem
 .eslintcache
 .stylelintcache
+
+.superpowers

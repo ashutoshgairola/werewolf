@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/shared/Button'
 import { useAuthStore } from '@/stores/authStore'
 import { useRoomStore } from '@/stores/roomStore'
-import { connectSocket } from '@/socket/client'
-import { registerHandlers } from '@/socket/handlers'
+import { connectSocket, disconnectSocket } from '@/socket/client'
+import { registerHandlers, resetHandlers } from '@/socket/handlers'
 import { socketEvents } from '@/socket/events'
 
 const NAME_REGEX = /^[a-zA-Z0-9 ]{3,20}$/
@@ -49,6 +49,11 @@ export default function Landing() {
     }
     const { token, playerId } = await res.json() as { token: string; playerId: string }
     setAuth(token, playerId, displayName.trim())
+    // Always disconnect any stale socket so the new connection uses the fresh token/playerId.
+    // Without this, a persisted non-expired token would have already connected with an old
+    // playerId on mount (App.tsx), making hostId ≠ myId in the lobby.
+    disconnectSocket()
+    resetHandlers()
     const socket = connectSocket(token)
     registerHandlers(socket)
     return token

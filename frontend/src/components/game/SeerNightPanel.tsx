@@ -5,13 +5,16 @@ import { PlayerGrid } from './PlayerGrid'
 import { playSound } from '@/hooks/useSoundManager'
 
 export function SeerNightPanel() {
-  const [inspected, setInspected] = useState(false)
+  // Track which round the inspection was made — resets automatically when round increments
+  const [inspectedRound, setInspectedRound] = useState<number | null>(null)
+  const round = useGameStore((s) => s.round)
+  const inspected = inspectedRound === round
   const seerResults = useGameStore((s) => s.seerResults)
   const seerInspectedTargets = useGameStore((s) => s.seerInspectedTargets)
 
   function handleSelect(id: string) {
     if (inspected) return
-    setInspected(true)
+    setInspectedRound(round)
     socketEvents.seerInspect(id)
     playSound('seer_action')
   }

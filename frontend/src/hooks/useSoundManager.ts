@@ -59,7 +59,7 @@ export function playSound(key: SoundKey) {
     lazy.muted = _muted
     lazy.preload = 'auto'
     _audio[key] = lazy
-    lazy.addEventListener('canplaythrough', () => lazy.play().catch(() => {}), { once: true })
+    lazy.addEventListener('canplaythrough', () => { if (!_muted) lazy.play().catch(() => {}) }, { once: true })
     lazy.load()
     return
   }

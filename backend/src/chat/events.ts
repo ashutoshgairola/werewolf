@@ -27,7 +27,30 @@ export function registerChatEvents(io: Server, socket: Socket): void {
     if (!roomCode) return
 
     const game = store.getGame(roomCode)
-    if (!game) return
+
+    // ── Lobby chat (no active game) ──────────────────────────────────────────
+    if (!game) {
+      // Only the day channel is available pre-game
+      if (channel !== 'day') {
+        socket.emit('error', { code: ErrorCodes.CHANNEL_ACCESS_DENIED, message: 'Only day channel available in lobby' })
+        return
+      }
+      const rateCheck = checkRateLimit(playerId, 'day')
+      if (rateCheck.limited) {
+        socket.emit('chat:rate_limited', { channel, retryAfter: rateCheck.retryAfter })
+        return
+      }
+      const { message, error } = buildChatMessage(playerId, displayName, text, 'day')
+      if (error || !message) {
+        socket.emit('error', { code: error, message: error })
+        return
+      }
+      // Broadcast to whole room (not persisted — lobby chat is ephemeral)
+      io.to(roomCode).emit('chat:message', { channel: 'day', message })
+      return
+    }
+
+    // ── In-game chat ─────────────────────────────────────────────────────────
 
     // Validate channel access
     const access = validateChatAccess(game, playerId, channel as ChatChannel)
