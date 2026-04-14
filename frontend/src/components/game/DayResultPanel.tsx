@@ -22,6 +22,7 @@ export function DayResultPanel() {
         'min-h-screen flex flex-col items-center justify-center gap-6 p-8 text-center bg-parchment transition-opacity duration-1000',
         done ? 'opacity-0' : 'opacity-100',
       ].join(' ')}
+      style={{ position: 'relative', zIndex: 1 }}
     >
       <span className="text-6xl">⚖️</span>
 

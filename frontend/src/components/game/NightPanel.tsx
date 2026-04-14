@@ -21,7 +21,7 @@ export function NightPanel() {
 
   if (isWolf) {
     return (
-      <div className="min-h-screen bg-moon flex flex-col">
+      <div className="min-h-screen bg-moon flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
         <PhaseHeader />
         <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-4xl mx-auto w-full overflow-hidden">
           <div className="flex-1 min-w-0">
@@ -36,7 +36,7 @@ export function NightPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-moon flex flex-col">
+    <div className="min-h-screen bg-moon flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
       <PhaseHeader />
       <div className="flex-1 p-4 md:p-6 max-w-lg mx-auto w-full">
         <RoleContent />

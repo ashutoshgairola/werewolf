@@ -20,6 +20,8 @@ export function DawnPanel() {
         done ? 'opacity-0' : 'opacity-100',
       ].join(' ')}
       style={{
+        position: 'relative',
+        zIndex: 1,
         background: 'linear-gradient(to bottom, #1E1B4B 0%, #F59E0B 60%, #F5E6C8 100%)',
         animation: 'dawn-rise 5s ease-out forwards',
       }}
