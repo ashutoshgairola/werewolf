@@ -1,5 +1,5 @@
 // frontend/src/hooks/useSoundManager.ts
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { SOUND_URLS, type SoundKey } from '@/theme/roleThemes'
 
 // Module-level singleton state — shared across all hook instances
@@ -11,7 +11,8 @@ const _audio: Partial<Record<SoundKey, HTMLAudioElement>> = {}
 let _userInteracted = false
 
 function notifyListeners() {
-  _listeners.forEach(fn => fn())
+  // Snapshot to avoid mutation-during-iteration if a listener causes unmount
+  ;[..._listeners].forEach(fn => fn())
 }
 
 function setMuted(value: boolean) {
@@ -29,9 +30,12 @@ function handleFirstInteraction() {
   document.removeEventListener('touchstart', handleFirstInteraction)
   document.removeEventListener('keydown', handleFirstInteraction)
 }
-document.addEventListener('click', handleFirstInteraction)
-document.addEventListener('touchstart', handleFirstInteraction)
-document.addEventListener('keydown', handleFirstInteraction)
+// Guard against non-browser environments (tests, SSR)
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', handleFirstInteraction)
+  document.addEventListener('touchstart', handleFirstInteraction)
+  document.addEventListener('keydown', handleFirstInteraction)
+}
 
 export function preloadSounds(keys: SoundKey[]) {
   keys.forEach(key => {
@@ -50,11 +54,13 @@ export function playSound(key: SoundKey) {
   if (!_userInteracted) return  // Don't attempt before user gesture on mobile
   const el = _audio[key]
   if (!el) {
-    // Lazy-load if not preloaded
+    // Lazy-load if not preloaded — wait for canplaythrough to avoid silent mobile failures
     const lazy = new Audio(SOUND_URLS[key])
     lazy.muted = _muted
+    lazy.preload = 'auto'
     _audio[key] = lazy
-    lazy.play().catch(() => { /* silent fail */ })
+    lazy.addEventListener('canplaythrough', () => lazy.play().catch(() => {}), { once: true })
+    lazy.load()
     return
   }
   // Rewind and play — allows rapid re-triggering (e.g. vote_thud)
@@ -64,10 +70,10 @@ export function playSound(key: SoundKey) {
 
 export function useSoundManager() {
   const [muted, setMutedState] = useState(_muted)
-  const listenerRef = useRef(() => setMutedState(_muted))
 
   useEffect(() => {
-    const listener = listenerRef.current
+    // Create listener inside useEffect so it reads _muted at call time, not at mount time
+    const listener = () => setMutedState(_muted)
     _listeners.push(listener)
     return () => {
       _listeners = _listeners.filter(fn => fn !== listener)
@@ -75,7 +81,7 @@ export function useSoundManager() {
   }, [])
 
   const toggleMute = useCallback(() => {
-    setMuted(!_muted)
+    setMuted(!_muted) // reads module-level truth, not React state — intentional
   }, [])
 
   const play = useCallback((key: SoundKey) => {
