@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { socketEvents } from '@/socket/events'
 import { PlayerGrid } from './PlayerGrid'
+import { playSound } from '@/hooks/useSoundManager'
 
 export function SeerNightPanel() {
   const [inspected, setInspected] = useState(false)
@@ -12,6 +13,7 @@ export function SeerNightPanel() {
     if (inspected) return
     setInspected(true)
     socketEvents.seerInspect(id)
+    playSound('seer_action')
   }
 
   const resultEntry = seerResults[seerResults.length - 1]

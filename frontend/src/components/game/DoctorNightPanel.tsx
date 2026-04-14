@@ -3,6 +3,7 @@ import { useGameStore } from '@/stores/gameStore'
 import { useAuthStore } from '@/stores/authStore'
 import { socketEvents } from '@/socket/events'
 import { PlayerGrid } from './PlayerGrid'
+import { playSound } from '@/hooks/useSoundManager'
 
 export function DoctorNightPanel() {
   const [protected_, setProtected] = useState(false)
@@ -13,6 +14,7 @@ export function DoctorNightPanel() {
     if (protected_) return
     setProtected(true)
     socketEvents.doctorProtect(id)
+    playSound('doctor_action')
   }
 
   const disabledIds = [

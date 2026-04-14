@@ -3,6 +3,7 @@ import { useGameStore } from '@/stores/gameStore'
 import { useAuthStore } from '@/stores/authStore'
 import { socketEvents } from '@/socket/events'
 import { PlayerGrid } from './PlayerGrid'
+import { playSound } from '@/hooks/useSoundManager'
 
 export function WolfNightPanel() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -16,6 +17,7 @@ export function WolfNightPanel() {
   function handleSelect(id: string) {
     setSelectedId((prev) => (prev === id ? null : id))
     socketEvents.wolfVote(id)
+    playSound('wolf_action')
   }
 
   if (round === 1) {
