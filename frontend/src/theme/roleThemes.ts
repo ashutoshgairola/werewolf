@@ -100,7 +100,7 @@ export const ROLE_THEMES: Record<Role, RoleTheme> = {
     borderColor: '#7a5c00',
     flavourText: 'Something stalks the night. Your voice is your only weapon — use it.',
     particleColor: '#e8b84b',
-    sounds: { reveal: 'villager_reveal', nightAction: 'wolf_action' },
+    sounds: { reveal: 'villager_reveal', nightAction: 'villager_reveal' }, // villager has no night action — nightAction is never called
     cssVars: {
       '--theme-bg-from': '#1a1400',
       '--theme-bg-to': '#2d2200',
