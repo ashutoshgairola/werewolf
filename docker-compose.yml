@@ -26,8 +26,8 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/werewolf
       JWT_SECRET: ${JWT_SECRET}
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      # nginx proxies same-origin — CORS only needed for external direct access
-      CORS_ORIGIN: "http://localhost:${PORT:-80}"
+      # nginx proxies same-origin so CORS is not needed — allow all origins
+      CORS_ORIGIN: "*"
     depends_on:
       db:
         condition: service_healthy

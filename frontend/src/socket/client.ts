@@ -3,8 +3,10 @@ import { useAuthStore } from '@/stores/authStore'
 
 let socket: Socket | null = null
 
-// Empty string means same-origin (production via nginx). Fallback to localhost for dev.
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+// Use window.location.origin for same-origin (production). Fall back to localhost for dev.
+const API_URL = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL !== '')
+  ? import.meta.env.VITE_API_URL
+  : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
 
 export function getSocket(): Socket {
   if (!socket) {
