@@ -33,9 +33,10 @@ if [ -z "$DATABASE_URL" ]; then
   export DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5432/werewolf"
 fi
 
-# Substitute BACKEND_URL in nginx config (default to localhost since all in one container)
+# Substitute variables in nginx config
 export BACKEND_URL="${BACKEND_URL:-http://127.0.0.1:3000}"
-envsubst '${BACKEND_URL}' < /etc/nginx/http.d/default.conf > /tmp/default.conf
+export PORT="${PORT:-80}"
+envsubst '${BACKEND_URL} ${PORT}' < /etc/nginx/http.d/default.conf > /tmp/default.conf
 cp /tmp/default.conf /etc/nginx/http.d/default.conf
 
 exec supervisord -c /etc/supervisord.conf
