@@ -3,7 +3,8 @@ import { useAuthStore } from '@/stores/authStore'
 
 let socket: Socket | null = null
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+// Empty string means same-origin (production via nginx). Fallback to localhost for dev.
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export function getSocket(): Socket {
   if (!socket) {

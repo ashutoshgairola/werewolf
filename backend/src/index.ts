@@ -67,8 +67,10 @@ app.use('/rooms', roomRouter)
 // ── HTTP + Socket.IO ──────────────────────────────────────────────────────────
 const httpServer = http.createServer(app)
 
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? '*'
+
 const io = new Server(httpServer, {
-  cors: { origin: '*', methods: ['GET', 'POST'] },
+  cors: { origin: CORS_ORIGIN, methods: ['GET', 'POST'] },
 })
 
 io.use(socketAuthMiddleware)
