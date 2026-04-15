@@ -1,6 +1,13 @@
 #!/bin/sh
 set -e
 
+# ── Load secret file if present (Render mounts at /etc/secrets/.env) ──────────
+if [ -f /etc/secrets/.env ]; then
+  set -a
+  . /etc/secrets/.env
+  set +a
+fi
+
 # ── Init postgres if first run ─────────────────────────────────────────────────
 if [ ! -f "$PGDATA/PG_VERSION" ]; then
   echo "Initialising PostgreSQL database..."
