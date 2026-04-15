@@ -17,10 +17,10 @@ import { useSoundManager } from '@/hooks/useSoundManager'
 function MuteButton() {
   const { muted, toggleMute } = useSoundManager()
   return (
-    // Mobile: fixed bottom-right, hidden on sm+ (desktop has DesktopMuteButton)
+    // Mobile: fixed top-left, hidden on sm+ (desktop has DesktopMuteButton)
     <button
       onClick={toggleMute}
-      className="fixed bottom-4 right-4 z-50 sm:hidden w-11 h-11 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-xl border border-white/10"
+      className="fixed top-3 left-3 z-50 sm:hidden w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-lg border border-white/10"
       aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
     >
       {muted ? '🔇' : '🔊'}
@@ -47,6 +47,7 @@ function DayDiscussionView() {
   const myId = useAuthStore((s) => s.playerId)!
   const roles = useGameStore((s) => s.roles)
   const alive = useGameStore((s) => s.alive)
+  const dawnInfo = useGameStore((s) => s.dawnInfo)
 
   const isDead = !alive.includes(myId)
 
@@ -55,14 +56,23 @@ function DayDiscussionView() {
     role: roles[p.playerId],
   }))
 
+  const killedLastNight = dawnInfo?.killedPlayerId
+    ? players.find((p) => p.playerId === dawnInfo.killedPlayerId)?.displayName ?? null
+    : null
+
   return (
-    <div className="min-h-screen flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-      <div className="flex items-center justify-between pr-2">
+    <div className="h-full flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="flex items-center justify-between pr-2 flex-shrink-0">
         <PhaseHeader />
         <DesktopMuteButton />
       </div>
-      <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-4xl mx-auto w-full">
-        <div className="md:w-56 flex-shrink-0 space-y-3">
+      {killedLastNight && (
+        <div className="flex-shrink-0 mx-4 mb-1 bg-black/30 border border-ember/40 rounded-lg px-3 py-2 text-sm text-ember/90 font-body text-center">
+          ☠️ <strong>{killedLastNight}</strong> was found dead this morning
+        </div>
+      )}
+      <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-4xl mx-auto w-full min-h-0">
+        <div className="md:w-56 flex-shrink-0 space-y-3 overflow-y-auto">
           <PlayerList
             players={enrichedPlayers as typeof players}
             hostId={hostId}
@@ -70,11 +80,11 @@ function DayDiscussionView() {
           />
           <SkipVoteBar />
         </div>
-        <div className="flex-1 min-h-64 md:min-h-0" style={{ height: 'calc(100vh - 120px)' }}>
+        <div className="flex-1 min-h-0">
           <ChatPanel visibleChannels={['day', 'system']} />
         </div>
         {isDead && (
-          <div className="md:w-64 min-h-48" style={{ height: 'calc(100vh - 120px)' }}>
+          <div className="md:w-64 min-h-0 h-48 md:h-auto">
             <ChatPanel visibleChannels={['ghost']} defaultChannel="ghost" />
           </div>
         )}
@@ -85,16 +95,16 @@ function DayDiscussionView() {
 
 function DayVotingView() {
   return (
-    <div className="min-h-screen flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-      <div className="flex items-center justify-between pr-2">
+    <div className="h-full flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="flex items-center justify-between pr-2 flex-shrink-0">
         <PhaseHeader />
         <DesktopMuteButton />
       </div>
-      <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-4xl mx-auto w-full">
-        <div className="flex-1">
+      <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-4xl mx-auto w-full min-h-0">
+        <div className="flex-1 overflow-y-auto">
           <VotePanel />
         </div>
-        <div className="md:w-64 min-h-48" style={{ height: 'calc(100vh - 120px)' }}>
+        <div className="md:w-64 min-h-0 h-48 md:h-auto">
           <ChatPanel visibleChannels={['day', 'system']} />
         </div>
       </div>

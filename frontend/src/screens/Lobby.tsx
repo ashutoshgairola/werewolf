@@ -22,7 +22,7 @@ export default function Lobby() {
   const connectedCount = players.filter((p) => p.connectionStatus === 'connected').length
 
   return (
-    <div className="min-h-screen bg-parchment p-4 md:p-6">
+    <div className="h-full overflow-y-auto bg-parchment p-4 md:p-6">
       <div className="max-w-2xl mx-auto space-y-5">
         {/* Header */}
         <div className="text-center pt-4 pb-2">

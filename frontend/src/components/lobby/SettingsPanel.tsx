@@ -90,6 +90,32 @@ export function SettingsPanel({ settings, isHost }: SettingsPanelProps) {
         disabled={!isHost}
         onCommit={(v) => emit({ dayVotingDuration: v })}
       />
+
+      <div className="border-t border-wood/20 pt-3 space-y-3">
+        <p className="text-xs font-body text-wood/60 uppercase tracking-widest">Round 1 Rules</p>
+
+        <label className="flex items-center justify-between gap-3 cursor-pointer">
+          <span className="text-sm font-body text-wood-dark">Seer can inspect Night 1</span>
+          <input
+            type="checkbox"
+            checked={settings.seerCanActRound1}
+            disabled={!isHost}
+            onChange={(e) => emit({ seerCanActRound1: e.target.checked })}
+            className="w-4 h-4 accent-candle disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+        </label>
+
+        <label className="flex items-center justify-between gap-3 cursor-pointer">
+          <span className="text-sm font-body text-wood-dark">Wolves can kill Night 1</span>
+          <input
+            type="checkbox"
+            checked={settings.wolvesCanKillRound1}
+            disabled={!isHost}
+            onChange={(e) => emit({ wolvesCanKillRound1: e.target.checked })}
+            className="w-4 h-4 accent-candle disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+        </label>
+      </div>
     </div>
   )
 }

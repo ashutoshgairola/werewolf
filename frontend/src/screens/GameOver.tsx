@@ -22,7 +22,7 @@ export default function GameOver() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-6"
+      className="h-full overflow-y-auto flex flex-col items-center justify-center p-6"
       style={{
         background: isWolvesWin
           ? 'linear-gradient(135deg, #1E1B4B, #4C1D95)'

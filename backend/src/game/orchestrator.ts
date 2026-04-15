@@ -121,7 +121,7 @@ export async function advancePhase(roomCode: string, io: Server): Promise<void> 
       // Auto-fill missing wolf votes
       fillMissingWolfVotes(game)
 
-      const resolution = resolveNight(game, game.nightActions, rand)
+      const resolution = resolveNight(game, game.nightActions, rand, room?.settings)
 
       // Apply kill
       if (resolution.killedPlayerId) {
@@ -320,7 +320,7 @@ export function handleNightAction(
   switch (action.type) {
     case 'wolf_vote':
       game.nightActions.wolfVotes.set(playerId, action.targetId)
-      broadcastWolfTally(game, roomCode, io)
+      broadcastWolfTally(game, io)
       break
     case 'seer_inspect':
       game.nightActions.seerTarget = action.targetId
@@ -334,7 +334,7 @@ export function handleNightAction(
   return {}
 }
 
-function broadcastWolfTally(game: GameState, roomCode: string, io: Server): void {
+function broadcastWolfTally(game: GameState, io: Server): void {
   const tally: Record<string, number> = {}
   for (const targetId of game.nightActions.wolfVotes.values()) {
     tally[targetId] = (tally[targetId] ?? 0) + 1

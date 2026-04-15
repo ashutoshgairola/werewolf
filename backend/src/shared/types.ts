@@ -30,12 +30,16 @@ export interface GameSettings {
   nightDuration: number          // ms
   dayDiscussionDuration: number  // ms
   dayVotingDuration: number      // ms
+  seerCanActRound1: boolean      // whether seer may inspect on night 1
+  wolvesCanKillRound1: boolean   // whether wolves may kill on night 1
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
   nightDuration: 60_000,
   dayDiscussionDuration: 120_000,
   dayVotingDuration: 30_000,
+  seerCanActRound1: true,
+  wolvesCanKillRound1: false,
 }
 
 export interface RoomPlayer {

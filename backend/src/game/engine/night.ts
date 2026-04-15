@@ -56,19 +56,21 @@ export function validateNightAction(
 
 /**
  * Resolves all night actions in order: doctor protect → wolf vote → kill → seer inspect.
- * Night 1 (round === 1) is peaceful: wolves cannot kill.
+ * Round 1 behaviour is controlled by settings.wolvesCanKillRound1 / settings.seerCanActRound1.
  * @param randFn Injected randomizer for wolf vote tie-breaking
+ * @param settings Optional room settings (falls back to defaults if omitted)
  */
 export function resolveNight(
   state: GameState,
   actions: NightActionsState,
-  randFn: (max: number) => number
+  randFn: (max: number) => number,
+  settings?: { wolvesCanKillRound1: boolean; seerCanActRound1: boolean }
 ): NightResolution {
   const doctorProtect = actions.doctorTarget
 
-  // Night 1 is peaceful — no wolf kill
+  const wolvesCanKill = state.round > 1 || (settings?.wolvesCanKillRound1 ?? false)
   let killTarget: string | null = null
-  if (state.round > 1) {
+  if (wolvesCanKill) {
     killTarget = talliedWolfTarget(actions.wolfVotes, randFn)
   }
 
@@ -76,9 +78,10 @@ export function resolveNight(
   const killedPlayerId =
     killTarget !== null && killTarget !== doctorProtect ? killTarget : null
 
-  // Seer result
+  // Seer result — blocked on round 1 if setting disabled
+  const seerCanAct = state.round > 1 || (settings?.seerCanActRound1 ?? true)
   let seerResult: NightResolution['seerResult'] = null
-  if (actions.seerTarget !== null) {
+  if (seerCanAct && actions.seerTarget !== null) {
     seerResult = {
       targetId: actions.seerTarget,
       isWolf: state.roles.get(actions.seerTarget) === 'werewolf',

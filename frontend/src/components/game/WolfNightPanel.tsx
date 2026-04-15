@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
+import { useRoomStore } from '@/stores/roomStore'
 import { useAuthStore } from '@/stores/authStore'
 import { socketEvents } from '@/socket/events'
 import { PlayerGrid } from './PlayerGrid'
@@ -11,6 +12,12 @@ export function WolfNightPanel() {
   const wolfTally = useGameStore((s) => s.wolfTally)
   const round = useGameStore((s) => s.round)
   const myId = useAuthStore((s) => s.playerId)!
+  const players = useRoomStore((s) => s.players)
+  const wolvesCanKillRound1 = useRoomStore((s) => s.settings.wolvesCanKillRound1)
+
+  function nameOf(id: string): string {
+    return players.find((p) => p.playerId === id)?.displayName ?? id.slice(0, 6)
+  }
 
   const allWolfIds = [myId, ...knownAllies]
 
@@ -20,7 +27,7 @@ export function WolfNightPanel() {
     playSound('wolf_action')
   }
 
-  if (round === 1) {
+  if (round === 1 && !wolvesCanKillRound1) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
         <span className="text-5xl">🌙</span>
@@ -30,7 +37,7 @@ export function WolfNightPanel() {
         </p>
         {knownAllies.length > 0 && (
           <p className="text-ember/80 text-sm font-body mt-2">
-            Your allies: {knownAllies.join(', ')}
+            Your allies: {knownAllies.map(nameOf).join(', ')}
           </p>
         )}
       </div>
@@ -48,7 +55,7 @@ export function WolfNightPanel() {
       {Object.keys(wolfTally).length > 0 && (
         <div className="bg-ember/10 border border-ember/30 rounded-lg px-3 py-2 text-sm text-ember font-body">
           Pack vote: {Object.entries(wolfTally)
-            .map(([id, count]) => `${id.slice(0, 6)} ×${count}`)
+            .map(([id, count]) => `${nameOf(id)} ×${count}`)
             .join(', ')}
         </div>
       )}

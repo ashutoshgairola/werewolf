@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
+import { useRoomStore } from '@/stores/roomStore'
 import { socketEvents } from '@/socket/events'
 import { PlayerGrid } from './PlayerGrid'
 import { playSound } from '@/hooks/useSoundManager'
@@ -8,6 +9,8 @@ export function SeerNightPanel() {
   // Track which round the inspection was made — resets automatically when round increments
   const [inspectedRound, setInspectedRound] = useState<number | null>(null)
   const round = useGameStore((s) => s.round)
+  const seerCanActRound1 = useRoomStore((s) => s.settings.seerCanActRound1)
+  const blocked = round === 1 && !seerCanActRound1
   const inspected = inspectedRound === round
   const seerResults = useGameStore((s) => s.seerResults)
   const seerInspectedTargets = useGameStore((s) => s.seerInspectedTargets)
@@ -20,6 +23,18 @@ export function SeerNightPanel() {
   }
 
   const resultEntry = seerResults[seerResults.length - 1]
+
+  if (blocked) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+        <span className="text-5xl">🔮</span>
+        <p className="font-tavern text-parchment text-xl">Vision Clouded</p>
+        <p className="text-parchment/50 font-body text-sm max-w-xs">
+          Your sight is not yet clear. The spirits have blocked your vision on the first night.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">

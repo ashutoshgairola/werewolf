@@ -10,9 +10,11 @@ const NAME_REGEX = /^[a-zA-Z0-9 ]{3,20}$/
 const REST_BASE = import.meta.env.VITE_REST_BASE_URL ?? '/api'
 
 export default function Landing() {
+  const urlCode = new URLSearchParams(window.location.search).get('join')?.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) ?? ''
+
   const [displayName, setDisplayName] = useState('')
-  const [joinCode, setJoinCode] = useState('')
-  const [mode, setMode] = useState<'idle' | 'join'>('idle')
+  const [joinCode, setJoinCode] = useState(urlCode)
+  const [mode, setMode] = useState<'idle' | 'join'>(urlCode.length === 6 ? 'join' : 'idle')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [kickMessage, setKickMessage] = useState<string | null>(null)
@@ -87,7 +89,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-parchment p-6">
+    <div className="h-full overflow-y-auto flex flex-col items-center justify-center bg-parchment p-6">
       {/* Header */}
       <div className="text-center mb-10">
         <div className="text-7xl mb-3">🐺</div>

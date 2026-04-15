@@ -186,6 +186,12 @@ export function updateSettings(
     }
     s.dayVotingDuration = settings.dayVotingDuration
   }
+  if (settings.seerCanActRound1 !== undefined) {
+    s.seerCanActRound1 = Boolean(settings.seerCanActRound1)
+  }
+  if (settings.wolvesCanKillRound1 !== undefined) {
+    s.wolvesCanKillRound1 = Boolean(settings.wolvesCanKillRound1)
+  }
 
   room.lastActivityAt = Date.now()
   return {}
