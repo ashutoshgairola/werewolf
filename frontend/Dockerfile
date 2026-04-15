@@ -16,6 +16,6 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY --from=builder /app/public /usr/share/nginx/html
 COPY nginx/default.conf /etc/nginx/templates/default.conf.template
 # nginx docker image runs envsubst on /etc/nginx/templates/*.template at startup
-# BACKEND_URL must be set at runtime (e.g. https://your-backend.onrender.com)
+# Used by docker-compose only — backend service is reachable as http://backend:3000
 ENV BACKEND_URL=http://backend:3000
 EXPOSE 80
