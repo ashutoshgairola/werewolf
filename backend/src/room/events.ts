@@ -192,6 +192,7 @@ function buildGameSnapshot(game: GameState, playerId: string) {
     alive: [...game.alive],
     roles: rolesVisible,
     dayVotes: Object.fromEntries(game.dayVotes),
+    daySkipVotes: [...game.daySkipVotes],
     doctorLastProtected: role === 'doctor' ? game.doctorLastProtected : null,
     seerInspectedTargets: role === 'seer' ? [...game.seerInspectedTargets] : [],
     winner: game.winner,

@@ -103,7 +103,7 @@ export function ChatPanel({ defaultChannel = 'day', visibleChannels }: ChatPanel
     : false
 
   return (
-    <div className="flex flex-col h-full bg-parchment border border-wood/30 rounded-xl overflow-hidden">
+    <div className="relative flex flex-col h-full bg-parchment border border-wood/30 rounded-xl overflow-hidden">
       {/* Tabs */}
       <div className="flex border-b border-wood/20 bg-parchment-light overflow-x-auto">
         {tabs.map((ch) => (

@@ -102,7 +102,8 @@ export const useGameStore = create<GameStoreState & GameStoreActions>()((set) =>
       dayVoteTallies: phase === 'DAY_VOTING' ? {} : state.dayVoteTallies,
       wolfTally: phase === 'NIGHT' ? {} : state.wolfTally,
       skipVote: phase === 'DAY_DISCUSSION' ? { skipCount: 0, aliveCount: state.alive.length } : state.skipVote,
-      dawnInfo: phase !== 'DAWN' ? state.dawnInfo : state.dawnInfo,
+      // Clear dawnInfo when entering NIGHT (new round starts) so stale kill banner can't reappear
+      dawnInfo: phase === 'NIGHT' ? null : state.dawnInfo,
       lynchedPlayerId: phase === 'DAY_RESULT' ? state.lynchedPlayerId : null,
     })),
 
@@ -137,6 +138,11 @@ export const useGameStore = create<GameStoreState & GameStoreActions>()((set) =>
       alive: snapshot.alive,
       roles: snapshot.roles,
       dayVotes: snapshot.dayVotes,
+      dayVoteTallies: Object.entries(snapshot.dayVotes).reduce<Record<string, number>>((acc, [, targetId]) => {
+        acc[targetId] = (acc[targetId] ?? 0) + 1
+        return acc
+      }, {}),
+      skipVote: { skipCount: snapshot.daySkipVotes?.length ?? 0, aliveCount: snapshot.alive.length },
       doctorLastProtected: snapshot.doctorLastProtected,
       seerInspectedTargets: snapshot.seerInspectedTargets,
       chatLogs: snapshot.chatLogs,
