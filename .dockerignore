@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+**/*.log
+frontend/sound-demo.html
+.git
+docs/
+.superpowers/
+.claude/
