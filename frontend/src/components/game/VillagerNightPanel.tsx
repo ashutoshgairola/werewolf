@@ -11,7 +11,7 @@ export function VillagerNightPanel() {
   const zz = ['z', 'zz', 'zzz'][zOffset]
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
+    <div className="flex flex-col items-center justify-center gap-5 py-8 text-center h-full">
       <span className="text-6xl">😴</span>
       <div>
         <p className="font-tavern text-parchment text-2xl mb-1">You are sleeping…</p>

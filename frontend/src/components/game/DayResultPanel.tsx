@@ -19,7 +19,7 @@ export function DayResultPanel() {
   return (
     <div
       className={[
-        'min-h-screen flex flex-col items-center justify-center gap-6 p-8 text-center bg-parchment transition-opacity duration-1000',
+        'flex-1 min-h-0 flex flex-col items-center justify-center gap-5 px-6 py-8 text-center bg-parchment transition-opacity duration-1000',
         done ? 'opacity-0' : 'opacity-100',
       ].join(' ')}
       style={{ position: 'relative', zIndex: 1 }}

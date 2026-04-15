@@ -22,15 +22,18 @@ export default function Lobby() {
   const connectedCount = players.filter((p) => p.connectionStatus === 'connected').length
 
   return (
-    <div className="h-full overflow-y-auto bg-parchment p-4 md:p-6">
-      <div className="max-w-2xl mx-auto space-y-5">
+    // Mobile: vertical scroll column. Desktop: side-by-side, no page scroll.
+    <div className="flex-1 min-h-0 flex flex-col lg:flex-row bg-parchment overflow-hidden">
+
+      {/* ── Left panel: config + players (scrollable on mobile, fixed on desktop) ── */}
+      <div className="flex-1 min-h-0 lg:max-w-lg overflow-y-auto p-4 md:p-5 space-y-4">
         {/* Header */}
-        <div className="text-center pt-4 pb-2">
-          <h1 className="font-tavern text-3xl text-wood-dark mb-1">Werewolf</h1>
+        <div className="text-center pt-2">
+          <h1 className="font-tavern text-3xl text-wood-dark mb-0.5">Werewolf</h1>
           <p className="text-wood/60 text-sm font-body">Waiting for players…</p>
         </div>
 
-        {/* Room code */}
+        {/* Room code + share */}
         <RoomCodeDisplay roomCode={roomCode} />
 
         {/* Players */}
@@ -42,13 +45,8 @@ export default function Lobby() {
         {/* Settings */}
         <SettingsPanel settings={settings} isHost={isHost} />
 
-        {/* Lobby chat */}
-        <div style={{ height: '280px' }}>
-          <ChatPanel visibleChannels={['day', 'system']} defaultChannel="day" />
-        </div>
-
-        {/* Action area */}
-        <div className="flex flex-col gap-3 pb-6">
+        {/* Actions */}
+        <div className="flex flex-col gap-3 pb-4">
           {isHost ? (
             <Button
               variant="primary"
@@ -75,6 +73,14 @@ export default function Lobby() {
           >
             Leave Room
           </Button>
+        </div>
+      </div>
+
+      {/* ── Right panel: lobby chat (fixed height column on desktop, 240px on mobile) ── */}
+      <div className="lg:w-80 lg:border-l border-wood/20 flex flex-col min-h-0">
+        {/* Mobile: fixed-height strip at bottom */}
+        <div className="h-56 lg:h-full">
+          <ChatPanel visibleChannels={['day', 'system']} defaultChannel="day" />
         </div>
       </div>
     </div>

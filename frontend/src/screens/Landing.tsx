@@ -89,16 +89,16 @@ export default function Landing() {
   }
 
   return (
-    <div className="h-full overflow-y-auto flex flex-col items-center justify-center bg-parchment p-6">
+    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center bg-parchment px-4 py-6">
       {/* Header */}
-      <div className="text-center mb-10">
-        <div className="text-7xl mb-3">🐺</div>
-        <h1 className="font-tavern text-5xl text-wood-dark mb-2">Werewolf</h1>
-        <p className="text-wood font-body italic text-lg">A game of deception and deduction</p>
+      <div className="text-center mb-6">
+        <div className="text-5xl sm:text-7xl mb-2">🐺</div>
+        <h1 className="font-tavern text-4xl sm:text-5xl text-wood-dark mb-1">Werewolf</h1>
+        <p className="text-wood font-body italic text-base sm:text-lg">A game of deception and deduction</p>
       </div>
 
       {/* Card */}
-      <div className="bg-parchment-light border-2 border-wood rounded-xl shadow-lg w-full max-w-sm p-7">
+      <div className="bg-parchment-light border-2 border-wood rounded-xl shadow-lg w-full max-w-sm p-5 sm:p-7">
         {kickMessage && (
           <div className="bg-ember/10 border border-ember text-ember text-sm rounded p-3 mb-4">
             {kickMessage}
@@ -192,7 +192,7 @@ export default function Landing() {
         </div>
       </div>
 
-      <p className="text-wood/50 text-xs mt-8">4–10 players • No signup required</p>
+      <p className="text-wood/50 text-xs mt-4">4–10 players • No signup required</p>
     </div>
   )
 }

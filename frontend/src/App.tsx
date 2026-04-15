@@ -34,11 +34,11 @@ export default function App() {
   })()
 
   return (
-    <div className="min-h-screen">
-      {screen === 'landing'  && <Landing />}
-      {screen === 'lobby'    && <Lobby />}
-      {screen === 'game'     && <Game />}
-      {screen === 'gameover' && <GameOver />}
+    <div className="h-screen overflow-hidden flex flex-col">
+      {screen === 'landing'  && <div key="landing"  className="screen-enter flex-1 min-h-0 flex flex-col"><Landing /></div>}
+      {screen === 'lobby'    && <div key="lobby"    className="screen-enter flex-1 min-h-0 flex flex-col"><Lobby /></div>}
+      {screen === 'game'     && <div key="game"     className="screen-enter flex-1 min-h-0 flex flex-col"><Game /></div>}
+      {screen === 'gameover' && <div key="gameover" className="screen-enter flex-1 min-h-0 flex flex-col"><GameOver /></div>}
       {socketStatus === 'reconnecting' && <ReconnectingOverlay />}
     </div>
   )

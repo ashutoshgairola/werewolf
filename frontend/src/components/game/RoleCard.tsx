@@ -46,15 +46,15 @@ export function RoleCard() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-6"
+      className="flex-1 min-h-0 flex flex-col items-center justify-center px-6 py-4 gap-4"
       style={{ position: 'relative', zIndex: 1 }}
     >
-      <p className="font-tavern text-parchment/60 text-sm uppercase tracking-widest mb-8">
+      <p className="font-tavern text-parchment/60 text-sm uppercase tracking-widest">
         Your role has been assigned
       </p>
 
       <div
-        className="w-64 h-96 cursor-pointer"
+        className="w-56 h-80 sm:w-64 sm:h-96 cursor-pointer"
         style={{ perspective: '1000px' }}
         onClick={() => setFlipped((f) => !f)}
       >
@@ -119,7 +119,7 @@ export function RoleCard() {
         </div>
       </div>
 
-      <p className="text-parchment/40 text-xs mt-8 font-body">
+      <p className="text-parchment/40 text-xs font-body">
         {flipped ? 'Click to flip back' : 'Flip to reveal'}
       </p>
     </div>

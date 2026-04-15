@@ -41,7 +41,7 @@ export function PlayerCard({
       onClick={onClick}
       disabled={disabled || dead}
       className={[
-        'relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all',
+        'relative flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all',
         dead
           ? 'bg-ink/10 border-ink/20 opacity-50 cursor-default'
           : selected
@@ -54,7 +54,7 @@ export function PlayerCard({
       {/* Avatar */}
       <div
         className={[
-          'w-10 h-10 rounded-full flex items-center justify-center text-sm font-tavern flex-shrink-0',
+          'w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-tavern flex-shrink-0',
           dead ? 'bg-ink/20 text-ink/40' : 'bg-wood text-parchment',
         ].join(' ')}
       >

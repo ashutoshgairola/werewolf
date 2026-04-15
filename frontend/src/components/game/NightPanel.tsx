@@ -22,13 +22,17 @@ export function NightPanel() {
 
   if (isWolf) {
     return (
-      <div className="min-h-screen bg-moon flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+      // Wolf: role actions left | pack chat right
+      // Mobile: stacked — actions on top, pack chat strip below
+      <div className="flex-1 min-h-0 flex flex-col bg-moon" style={{ position: 'relative', zIndex: 1 }}>
         <PhaseHeader />
-        <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-4xl mx-auto w-full overflow-hidden">
-          <div className="flex-1 min-w-0">
+        <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 p-3">
+          {/* Role actions — fill, scrollable if needed */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <NightRoleContent role={role} />
           </div>
-          <div className="md:w-72 min-h-48" style={{ height: 'calc(100vh - 120px)' }}>
+          {/* Pack chat — strip on mobile, right column on desktop */}
+          <div className="h-44 sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
             <ChatPanel visibleChannels={['wolf']} defaultChannel="wolf" />
           </div>
         </div>
@@ -37,10 +41,13 @@ export function NightPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-moon flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+    // Non-wolf: centered content, no chat
+    <div className="flex-1 min-h-0 flex flex-col bg-moon" style={{ position: 'relative', zIndex: 1 }}>
       <PhaseHeader />
-      <div className="flex-1 p-4 md:p-6 max-w-lg mx-auto w-full">
-        <NightRoleContent role={role} />
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="max-w-lg mx-auto px-4 py-6">
+          <NightRoleContent role={role} />
+        </div>
       </div>
     </div>
   )

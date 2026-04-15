@@ -40,7 +40,7 @@ export function PlayerGrid({
   })
 
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-2">
       {displayed.map((p) => {
         const isAlive = alive.includes(p.playerId)
         const role = roles[p.playerId] as Role | undefined

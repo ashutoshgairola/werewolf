@@ -1,4 +1,5 @@
 // frontend/src/screens/Game.tsx
+import { useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { RoleCard } from '@/components/game/RoleCard'
 import { NightPanel } from '@/components/game/NightPanel'
@@ -20,7 +21,7 @@ function MuteButton() {
     // Mobile: fixed top-left, hidden on sm+ (desktop has DesktopMuteButton)
     <button
       onClick={toggleMute}
-      className="fixed top-3 left-3 z-50 sm:hidden w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-lg border border-white/10"
+      className="fixed top-3 left-3 z-50 sm:hidden w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-base border border-white/10"
       aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
     >
       {muted ? '🔇' : '🔊'}
@@ -33,13 +34,17 @@ function DesktopMuteButton() {
   return (
     <button
       onClick={toggleMute}
-      className="hidden sm:flex w-9 h-9 items-center justify-center rounded-full bg-black/30 hover:bg-black/50 text-base border border-white/10 transition-colors flex-shrink-0"
+      className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full bg-black/30 hover:bg-black/50 text-sm border border-white/10 transition-colors flex-shrink-0"
       aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
     >
       {muted ? '🔇' : '🔊'}
     </button>
   )
 }
+
+// ── Day Discussion ────────────────────────────────────────────────────────────
+// Mobile: phase header → killed banner → [Players toggle] → Chat fills rest
+// Desktop: header → 3-col (players sidebar | chat | ghost chat)
 
 function DayDiscussionView() {
   const players = useRoomStore((s) => s.players)
@@ -48,6 +53,7 @@ function DayDiscussionView() {
   const roles = useGameStore((s) => s.roles)
   const alive = useGameStore((s) => s.alive)
   const dawnInfo = useGameStore((s) => s.dawnInfo)
+  const [showPlayers, setShowPlayers] = useState(false)
 
   const isDead = !alive.includes(myId)
 
@@ -61,18 +67,47 @@ function DayDiscussionView() {
     : null
 
   return (
-    <div className="h-full flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-      <div className="flex items-center justify-between pr-2 flex-shrink-0">
+    <div className="flex-1 min-h-0 flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+      {/* Header row */}
+      <div className="flex items-center justify-between flex-shrink-0 border-b border-wood/20">
         <PhaseHeader />
         <DesktopMuteButton />
       </div>
+
+      {/* Kill banner */}
       {killedLastNight && (
-        <div className="flex-shrink-0 mx-4 mb-1 bg-black/30 border border-ember/40 rounded-lg px-3 py-2 text-sm text-ember/90 font-body text-center">
+        <div className="flex-shrink-0 mx-3 mt-2 bg-black/30 border border-ember/40 rounded-lg px-3 py-1.5 text-sm text-ember/90 font-body text-center">
           ☠️ <strong>{killedLastNight}</strong> was found dead this morning
         </div>
       )}
-      <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-4xl mx-auto w-full min-h-0">
-        <div className="md:w-56 flex-shrink-0 space-y-3 overflow-y-auto">
+
+      {/* Mobile: player list toggle button */}
+      <div className="sm:hidden flex-shrink-0 px-3 pt-2">
+        <button
+          onClick={() => setShowPlayers((v) => !v)}
+          className="w-full flex items-center justify-between bg-parchment-light border border-wood/30 rounded-lg px-3 py-2 text-sm font-body text-wood-dark"
+        >
+          <span>👥 Players ({alive.length} alive)</span>
+          <span className="text-wood/50">{showPlayers ? '▲' : '▼'}</span>
+        </button>
+        {showPlayers && (
+          <div className="mt-2 max-h-48 overflow-y-auto bg-parchment border border-wood/20 rounded-lg p-2">
+            <PlayerList
+              players={enrichedPlayers as typeof players}
+              hostId={hostId}
+              isHost={myId === hostId}
+            />
+            <div className="mt-2">
+              <SkipVoteBar />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content area */}
+      <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 p-3">
+        {/* Desktop sidebar: players + skip */}
+        <div className="hidden sm:flex sm:w-52 lg:w-60 flex-shrink-0 flex-col gap-3 overflow-y-auto">
           <PlayerList
             players={enrichedPlayers as typeof players}
             hostId={hostId}
@@ -80,11 +115,15 @@ function DayDiscussionView() {
           />
           <SkipVoteBar />
         </div>
+
+        {/* Chat — fills remaining space */}
         <div className="flex-1 min-h-0">
           <ChatPanel visibleChannels={['day', 'system']} />
         </div>
+
+        {/* Ghost chat for dead players — right rail on desktop, strip below on mobile */}
         {isDead && (
-          <div className="md:w-64 min-h-0 h-48 md:h-auto">
+          <div className="sm:w-56 lg:w-64 flex-shrink-0 h-36 sm:h-auto min-h-0">
             <ChatPanel visibleChannels={['ghost']} defaultChannel="ghost" />
           </div>
         )}
@@ -93,24 +132,34 @@ function DayDiscussionView() {
   )
 }
 
+// ── Day Voting ────────────────────────────────────────────────────────────────
+// Mobile: header → vote grid (scrollable) → chat strip (fixed height)
+// Desktop: header → vote panel left | chat right
+
 function DayVotingView() {
   return (
-    <div className="h-full flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-      <div className="flex items-center justify-between pr-2 flex-shrink-0">
+    <div className="flex-1 min-h-0 flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="flex items-center justify-between flex-shrink-0 border-b border-wood/20">
         <PhaseHeader />
         <DesktopMuteButton />
       </div>
-      <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 max-w-4xl mx-auto w-full min-h-0">
-        <div className="flex-1 overflow-y-auto">
+
+      <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 p-3">
+        {/* Vote panel — scrollable on mobile if many players */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <VotePanel />
         </div>
-        <div className="md:w-64 min-h-0 h-48 md:h-auto">
+
+        {/* Chat — fixed strip on mobile, full height column on desktop */}
+        <div className="h-44 sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
           <ChatPanel visibleChannels={['day', 'system']} />
         </div>
       </div>
     </div>
   )
 }
+
+// ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function Game() {
   const phase = useGameStore((s) => s.phase)

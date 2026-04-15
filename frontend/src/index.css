@@ -11,7 +11,7 @@
   }
 
   body {
-    @apply bg-parchment text-ink min-h-screen;
+    @apply bg-parchment text-ink;
   }
 
   /* Custom scrollbar */
@@ -29,6 +29,15 @@
 @keyframes dawn-rise {
   0%   { opacity: 0; }
   100% { opacity: 1; }
+}
+
+@keyframes screen-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.screen-enter {
+  animation: screen-enter 0.25s ease-out both;
 }
 
 @layer utilities {

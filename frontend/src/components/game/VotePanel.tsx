@@ -38,7 +38,7 @@ export function VotePanel() {
           : 'You are eliminated — watching the vote'}
       </p>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-2">
         {players
           .filter((p) => alive.includes(p.playerId))
           .map((p) => {
