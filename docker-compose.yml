@@ -38,9 +38,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # In production the frontend talks to the same origin (nginx proxies /socket.io + /auth etc)
         VITE_API_URL: ""
     restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:3000
     ports:
       - "${PORT:-80}:80"
     depends_on:

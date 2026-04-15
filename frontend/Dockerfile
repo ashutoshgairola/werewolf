@@ -14,5 +14,8 @@ RUN npm run build
 FROM nginx:alpine AS runner
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY --from=builder /app/public /usr/share/nginx/html
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY nginx/default.conf /etc/nginx/templates/default.conf.template
+# nginx docker image runs envsubst on /etc/nginx/templates/*.template at startup
+# BACKEND_URL must be set at runtime (e.g. https://your-backend.onrender.com)
+ENV BACKEND_URL=http://backend:3000
 EXPOSE 80
