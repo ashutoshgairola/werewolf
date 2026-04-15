@@ -19,7 +19,7 @@ RUN npm run build
 FROM node:22-alpine AS runner
 
 # Install postgres, nginx, supervisor
-RUN apk add --no-cache postgresql16 postgresql16-contrib nginx supervisor
+RUN apk add --no-cache postgresql16 postgresql16-contrib nginx supervisor gettext
 
 # ── Postgres setup ────────────────────────────────────────────────────────────
 ENV PGDATA=/var/lib/postgresql/data
