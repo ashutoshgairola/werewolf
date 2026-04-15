@@ -1,4 +1,6 @@
 import { getSocket } from './client'
+import { useRoomStore } from '@/stores/roomStore'
+import { useGameStore } from '@/stores/gameStore'
 import type { ChatChannel, GameSettings } from '@/types/game'
 
 export const socketEvents = {
@@ -12,6 +14,8 @@ export const socketEvents = {
 
   leaveRoom: () => {
     getSocket().emit('room:leave')
+    useRoomStore.getState().clearRoom()
+    useGameStore.getState().clearGame()
   },
 
   setReady: (ready: boolean) => {

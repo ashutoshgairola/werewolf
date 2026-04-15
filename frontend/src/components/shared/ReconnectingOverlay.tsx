@@ -16,9 +16,9 @@ export default function ReconnectingOverlay() {
   function handleGiveUp() {
     disconnectSocket()
     resetHandlers()
-    useAuthStore.getState().clearAuth()
     useRoomStore.getState().clearRoom()
     useGameStore.getState().clearGame()
+    useAuthStore.getState().clearAuth()
   }
 
   return (
