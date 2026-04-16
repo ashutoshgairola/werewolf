@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { socketEvents } from '@/socket/events'
 import type { GameSettings } from '@/types/game'
 
@@ -8,10 +9,10 @@ interface SettingsPanelProps {
 
 interface SliderProps {
   label: string
-  value: number   // ms
-  min: number     // ms
-  max: number     // ms
-  step: number    // ms
+  serverValue: number  // ms — authoritative value from server
+  min: number          // ms
+  max: number          // ms
+  step: number         // ms
   disabled: boolean
   onCommit: (v: number) => void
 }
@@ -24,22 +25,35 @@ function fmtMs(ms: number): string {
   return rem === 0 ? `${m}m` : `${m}m ${rem}s`
 }
 
-function Slider({ label, value, min, max, step, disabled, onCommit }: SliderProps) {
+function Slider({ label, serverValue, min, max, step, disabled, onCommit }: SliderProps) {
+  // Local state so the slider feels responsive while dragging;
+  // sync back to serverValue when the server pushes an update.
+  const [local, setLocal] = useState(serverValue)
+
+  useEffect(() => {
+    setLocal(serverValue)
+  }, [serverValue])
+
   return (
     <div className="flex flex-col gap-1">
       <div className="flex justify-between items-center">
         <label className="text-sm font-body text-wood-dark">{label}</label>
-        <span className="text-sm font-mono text-ink font-semibold">{fmtMs(value)}</span>
+        <span className="text-sm font-mono text-ink font-semibold">{fmtMs(local)}</span>
       </div>
       <input
         type="range"
         min={min}
         max={max}
         step={step}
-        defaultValue={value}
+        value={local}
         disabled={disabled}
+        onChange={(e) => setLocal(Number(e.target.value))}
         onMouseUp={(e) => onCommit(Number((e.target as HTMLInputElement).value))}
-        onTouchEnd={(e) => onCommit(Number((e.target as HTMLInputElement).value))}
+        onTouchEnd={(e) => {
+          const v = Number((e.target as HTMLInputElement).value)
+          setLocal(v)
+          onCommit(v)
+        }}
         className="w-full accent-candle disabled:opacity-50 disabled:cursor-not-allowed"
       />
       <div className="flex justify-between text-xs text-wood/50">
@@ -63,7 +77,7 @@ export function SettingsPanel({ settings, isHost }: SettingsPanelProps) {
 
       <Slider
         label="Night Duration"
-        value={settings.nightDuration}
+        serverValue={settings.nightDuration}
         min={30_000}
         max={180_000}
         step={15_000}
@@ -73,7 +87,7 @@ export function SettingsPanel({ settings, isHost }: SettingsPanelProps) {
 
       <Slider
         label="Day Discussion"
-        value={settings.dayDiscussionDuration}
+        serverValue={settings.dayDiscussionDuration}
         min={60_000}
         max={600_000}
         step={30_000}
@@ -83,7 +97,7 @@ export function SettingsPanel({ settings, isHost }: SettingsPanelProps) {
 
       <Slider
         label="Day Voting"
-        value={settings.dayVotingDuration}
+        serverValue={settings.dayVotingDuration}
         min={15_000}
         max={120_000}
         step={15_000}

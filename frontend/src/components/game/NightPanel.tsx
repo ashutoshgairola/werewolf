@@ -31,8 +31,8 @@ export function NightPanel() {
           <div className="flex-1 min-h-0 overflow-y-auto">
             <NightRoleContent role={role} />
           </div>
-          {/* Pack chat — strip on mobile, right column on desktop */}
-          <div className="h-44 sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
+          {/* Pack chat — 36vh strip on mobile, right column on desktop */}
+          <div className="h-[36vh] sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
             <ChatPanel visibleChannels={['wolf']} defaultChannel="wolf" />
           </div>
         </div>

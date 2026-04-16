@@ -22,11 +22,11 @@ export default function Lobby() {
   const connectedCount = players.filter((p) => p.connectionStatus === 'connected').length
 
   return (
-    // Mobile: vertical scroll column. Desktop: side-by-side, no page scroll.
+    // Mobile: fixed-height chat at bottom, scrollable content above. Desktop: side-by-side.
     <div className="flex-1 min-h-0 flex flex-col lg:flex-row bg-parchment overflow-hidden">
 
-      {/* ── Left panel: config + players (scrollable on mobile, fixed on desktop) ── */}
-      <div className="flex-1 min-h-0 lg:max-w-lg overflow-y-auto p-4 md:p-5 space-y-4">
+      {/* ── Left panel: config + players (scrollable, fills remaining space above chat on mobile) ── */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-5 space-y-4 lg:max-w-lg">
         {/* Header */}
         <div className="text-center pt-2">
           <h1 className="font-tavern text-3xl text-wood-dark mb-0.5">Werewolf</h1>
@@ -76,12 +76,11 @@ export default function Lobby() {
         </div>
       </div>
 
-      {/* ── Right panel: lobby chat (fixed height column on desktop, 240px on mobile) ── */}
-      <div className="lg:w-80 lg:border-l border-wood/20 flex flex-col min-h-0">
-        {/* Mobile: fixed-height strip at bottom */}
-        <div className="h-56 lg:h-full">
-          <ChatPanel visibleChannels={['day', 'system']} defaultChannel="day" />
-        </div>
+      {/* ── Right panel: lobby chat ── */}
+      {/* Mobile: fixed 44vh strip at bottom so it's usable on any phone height */}
+      {/* Desktop (lg): full-height right column */}
+      <div className="h-[44vh] lg:h-auto lg:w-80 lg:border-l border-t lg:border-t-0 border-wood/20 flex-shrink-0 lg:flex-shrink lg:flex-1 min-h-0">
+        <ChatPanel visibleChannels={['day', 'system']} defaultChannel="day" />
       </div>
     </div>
   )

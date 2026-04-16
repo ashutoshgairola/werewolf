@@ -34,7 +34,7 @@ export default function App() {
   })()
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col">
+    <div className="overflow-hidden flex flex-col" style={{ height: '100dvh' }}>
       {screen === 'landing'  && <div key="landing"  className="screen-enter flex-1 min-h-0 flex flex-col"><Landing /></div>}
       {screen === 'lobby'    && <div key="lobby"    className="screen-enter flex-1 min-h-0 flex flex-col"><Lobby /></div>}
       {screen === 'game'     && <div key="game"     className="screen-enter flex-1 min-h-0 flex flex-col"><Game /></div>}

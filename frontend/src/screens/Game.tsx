@@ -123,7 +123,7 @@ function DayDiscussionView() {
 
         {/* Ghost chat for dead players — right rail on desktop, strip below on mobile */}
         {isDead && (
-          <div className="sm:w-56 lg:w-64 flex-shrink-0 h-36 sm:h-auto min-h-0">
+          <div className="sm:w-56 lg:w-64 flex-shrink-0 h-[28vh] sm:h-auto min-h-0">
             <ChatPanel visibleChannels={['ghost']} defaultChannel="ghost" />
           </div>
         )}
@@ -150,8 +150,8 @@ function DayVotingView() {
           <VotePanel />
         </div>
 
-        {/* Chat — fixed strip on mobile, full height column on desktop */}
-        <div className="h-44 sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
+        {/* Chat — 36vh strip on mobile (works on all phones), full height column on desktop */}
+        <div className="h-[36vh] sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
           <ChatPanel visibleChannels={['day', 'system']} />
         </div>
       </div>

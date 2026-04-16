@@ -18,6 +18,8 @@ export function getSocket(): Socket {
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 10_000,
+      // Try WebSocket first; fall back to long-polling for restrictive networks
+      transports: ['websocket', 'polling'],
     })
   }
   return socket

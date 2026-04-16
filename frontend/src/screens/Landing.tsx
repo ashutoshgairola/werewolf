@@ -89,12 +89,12 @@ export default function Landing() {
   }
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center bg-parchment px-4 py-6">
+    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center bg-parchment px-4 py-4 sm:py-6">
       {/* Header */}
-      <div className="text-center mb-6">
-        <div className="text-5xl sm:text-7xl mb-2">🐺</div>
-        <h1 className="font-tavern text-4xl sm:text-5xl text-wood-dark mb-1">Werewolf</h1>
-        <p className="text-wood font-body italic text-base sm:text-lg">A game of deception and deduction</p>
+      <div className="text-center mb-4 sm:mb-6">
+        <div className="text-4xl sm:text-7xl mb-1 sm:mb-2">🐺</div>
+        <h1 className="font-tavern text-3xl sm:text-5xl text-wood-dark mb-0.5 sm:mb-1">Werewolf</h1>
+        <p className="text-wood font-body italic text-sm sm:text-lg">A game of deception and deduction</p>
       </div>
 
       {/* Card */}

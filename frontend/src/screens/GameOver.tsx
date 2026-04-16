@@ -22,7 +22,7 @@ export default function GameOver() {
 
   return (
     <div
-      className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center px-4 py-6 gap-5"
+      className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center px-4 py-4 sm:py-6 gap-4 sm:gap-5"
       style={{
         background: isWolvesWin
           ? 'linear-gradient(135deg, #1E1B4B, #4C1D95)'
@@ -31,11 +31,11 @@ export default function GameOver() {
     >
       {/* Winner banner */}
       <div className="text-center">
-        <div className="text-5xl sm:text-7xl mb-2">{isWolvesWin ? '🐺' : '🏘️'}</div>
-        <h1 className="font-tavern text-3xl sm:text-5xl text-white drop-shadow-lg">
+        <div className="text-4xl sm:text-7xl mb-1 sm:mb-2">{isWolvesWin ? '🐺' : '🏘️'}</div>
+        <h1 className="font-tavern text-2xl sm:text-5xl text-white drop-shadow-lg">
           {isWolvesWin ? 'Werewolves Win!' : 'Village Wins!'}
         </h1>
-        <p className="text-white/60 font-body text-base mt-1">
+        <p className="text-white/60 font-body text-sm sm:text-base mt-1">
           {isWolvesWin ? 'Darkness has consumed the village…' : 'Peace returns to the village!'}
         </p>
       </div>
