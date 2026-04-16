@@ -29,16 +29,16 @@ export function VotePanel() {
   }
 
   return (
-    <div className="space-y-3">
-      <p className="text-sm font-body text-wood/60 text-center">
+    <div className="space-y-2 sm:space-y-3">
+      <p className="text-xs sm:text-sm font-body text-wood/60 text-center">
         {isAlive
           ? myVote
-            ? 'Click again to retract your vote'
-            : 'Click a player to vote for elimination'
+            ? 'Tap again to retract'
+            : 'Tap a player to vote for elimination'
           : 'You are eliminated — watching the vote'}
       </p>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-1.5 sm:gap-2">
         {players
           .filter((p) => alive.includes(p.playerId))
           .map((p) => {

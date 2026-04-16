@@ -144,14 +144,15 @@ function DayVotingView() {
         <DesktopMuteButton />
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 p-3">
+      {/* Mobile: vote grid top, compact chat strip bottom — gap/padding tightened */}
+      <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-2 sm:gap-3 p-2 sm:p-3">
         {/* Vote panel — scrollable on mobile if many players */}
         <div className="flex-1 min-h-0 overflow-y-auto">
           <VotePanel />
         </div>
 
-        {/* Chat — 36vh strip on mobile (works on all phones), full height column on desktop */}
-        <div className="h-[36vh] sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
+        {/* Chat — 26vh on mobile so the vote grid has breathing room; full column on desktop */}
+        <div className="h-[26vh] sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
           <ChatPanel visibleChannels={['day', 'system']} />
         </div>
       </div>
