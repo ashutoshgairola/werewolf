@@ -118,9 +118,6 @@ export async function advancePhase(roomCode: string, io: Server): Promise<void> 
     }
 
     case 'NIGHT': {
-      // Auto-fill missing wolf votes
-      fillMissingWolfVotes(game, room?.settings)
-
       const resolution = resolveNight(game, game.nightActions, rand, room?.settings)
 
       // Apply kill
@@ -357,26 +354,6 @@ function broadcastWolfTally(game: GameState, io: Server): void {
   for (const [pid, role] of game.roles) {
     if (role === 'werewolf' && game.alive.has(pid)) {
       io.to(`player:${pid}`).emit('game:wolf_vote_update', { tally })
-    }
-  }
-}
-
-function fillMissingWolfVotes(game: GameState, settings?: { wolvesCanKillRound1: boolean }): void {
-  if (game.round === 1 && !(settings?.wolvesCanKillRound1 ?? false)) return
-
-  const wolves = [...game.roles.entries()]
-    .filter(([pid, role]) => role === 'werewolf' && game.alive.has(pid))
-    .map(([pid]) => pid)
-
-  const nonWolfTargets = [...game.alive].filter(
-    pid => game.roles.get(pid) !== 'werewolf'
-  )
-  if (nonWolfTargets.length === 0) return
-
-  for (const wolfId of wolves) {
-    if (!game.nightActions.wolfVotes.has(wolfId)) {
-      const target = nonWolfTargets[rand(nonWolfTargets.length)]
-      game.nightActions.wolfVotes.set(wolfId, target)
     }
   }
 }
