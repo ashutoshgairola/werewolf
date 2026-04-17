@@ -40,8 +40,8 @@ export function VotePanel() {
 
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-1.5 sm:gap-2">
         {players
-          .filter((p) => alive.includes(p.playerId))
           .map((p) => {
+            const isPlayerAlive = alive.includes(p.playerId)
             const role = roles[p.playerId] as Role | undefined
             const voteCount = dayVoteTallies[p.playerId] ?? 0
 
@@ -50,7 +50,7 @@ export function VotePanel() {
                 key={p.playerId}
                 playerId={p.playerId}
                 displayName={p.displayName}
-                isAlive={true}
+                isAlive={isPlayerAlive}
                 role={role}
                 voteCount={voteCount > 0 ? voteCount : undefined}
                 selected={myVote === p.playerId}

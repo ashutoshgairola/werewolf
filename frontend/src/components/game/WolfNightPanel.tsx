@@ -80,6 +80,7 @@ export function WolfNightPanel() {
       <PlayerGrid
         filter={(id) => !allWolfIds.includes(id)}
         selectedId={selectedId}
+        showDead={true}
         onSelect={handleSelect}
       />
     </div>

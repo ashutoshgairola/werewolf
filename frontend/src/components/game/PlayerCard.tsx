@@ -58,7 +58,7 @@ export function PlayerCard({
           dead ? 'bg-ink/20 text-ink/40' : 'bg-wood text-parchment',
         ].join(' ')}
       >
-        {dead && role ? ROLE_INFO[role].icon : initials(displayName)}
+        {dead ? (role ? ROLE_INFO[role].icon : '💀') : initials(displayName)}
       </div>
 
       {/* Name */}
