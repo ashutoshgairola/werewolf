@@ -40,7 +40,7 @@ export function PhaseHeader({ totalSeconds }: PhaseHeaderProps) {
   const info = PHASE_INFO[phase]
 
   return (
-    <div className="flex-1 flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-3 bg-parchment-light border-b border-wood/30">
+    <div className="flex-shrink-0 flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-3 bg-parchment-light border-b border-wood/30">
       <div className="flex items-center gap-1.5 sm:gap-2">
         <span className="text-sm sm:text-xl">{info?.icon}</span>
         <div>

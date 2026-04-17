@@ -26,13 +26,15 @@ export function NightPanel() {
       // Mobile: stacked — actions on top, pack chat strip below
       <div className="flex-1 min-h-0 flex flex-col bg-moon" style={{ position: 'relative', zIndex: 1 }}>
         <PhaseHeader />
-        <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 p-3">
-          {/* Role actions — shrink-to-content on mobile, fill on desktop */}
-          <div className="min-h-0 overflow-y-auto sm:flex-1">
+        {/* Mobile: role content scrolls naturally above fixed chat strip */}
+        {/* Desktop: side-by-side columns */}
+        <div className="flex-1 min-h-0 flex flex-col sm:flex-row sm:gap-3 sm:p-3 overflow-hidden">
+          {/* Role actions */}
+          <div className="overflow-y-auto p-3 sm:p-0 sm:flex-1 sm:min-h-0">
             <NightRoleContent role={role} />
           </div>
-          {/* Pack chat — 36vh strip on mobile, right column on desktop */}
-          <div className="h-[36vh] sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
+          {/* Pack chat — fixed height strip on mobile, right column on desktop */}
+          <div className="h-[40vh] flex-shrink-0 sm:h-auto sm:w-64 lg:w-72 sm:min-h-0 border-t border-white/10 sm:border-t-0">
             <ChatPanel visibleChannels={['wolf']} defaultChannel="wolf" />
           </div>
         </div>
