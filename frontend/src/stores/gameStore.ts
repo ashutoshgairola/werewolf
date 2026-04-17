@@ -33,6 +33,7 @@ interface GameStoreState {
   dayVoteTallies: Record<string, number>  // targetId → vote count (from live updates)
   wolfTally: Record<string, number>       // targetId → vote count
   skipVote: SkipVoteState
+  daySkipVotes: string[]                  // playerIds who voted to skip (from snapshot)
   phaseStartedAt: number | null
   phaseEndsAt: number | null
   winner: Faction | null
@@ -61,6 +62,7 @@ interface GameStoreActions {
   setDayVoteTallies: (tallies: Record<string, number>) => void  // incoming tally from server
   setWolfTally: (tally: Record<string, number>) => void
   setSkipVote: (skipCount: number, aliveCount: number) => void
+  addDaySkipVote: (playerId: string) => void
   setDawnInfo: (info: DawnInfo) => void
   setYouWereKilledBy: (killerNames: string[]) => void
   addSeerResult: (targetId: string, isWolf: boolean) => void
@@ -81,6 +83,7 @@ const INITIAL_STATE: GameStoreState = {
   dayVoteTallies: {},
   wolfTally: {},
   skipVote: { skipCount: 0, aliveCount: 0 },
+  daySkipVotes: [],
   phaseStartedAt: null,
   phaseEndsAt: null,
   winner: null,
@@ -106,6 +109,7 @@ export const useGameStore = create<GameStoreState & GameStoreActions>()((set) =>
       dayVoteTallies: phase === 'DAY_VOTING' ? {} : state.dayVoteTallies,
       wolfTally: phase === 'NIGHT' ? {} : state.wolfTally,
       skipVote: phase === 'DAY_DISCUSSION' ? { skipCount: 0, aliveCount: state.alive.length } : state.skipVote,
+      daySkipVotes: phase === 'DAY_DISCUSSION' ? [] : state.daySkipVotes,
       // Clear dawn/kill info when entering NIGHT so stale banners can't reappear next round
       dawnInfo: phase === 'NIGHT' ? null : state.dawnInfo,
       youWereKilledBy: phase === 'NIGHT' ? null : state.youWereKilledBy,
@@ -148,8 +152,11 @@ export const useGameStore = create<GameStoreState & GameStoreActions>()((set) =>
         return acc
       }, {}),
       skipVote: { skipCount: snapshot.daySkipVotes?.length ?? 0, aliveCount: snapshot.alive.length },
+      daySkipVotes: snapshot.daySkipVotes ?? [],
       doctorLastProtected: snapshot.doctorLastProtected,
       seerInspectedTargets: snapshot.seerInspectedTargets,
+      seerResults: snapshot.seerResults ?? [],
+      wolfTally: snapshot.wolfTally ?? {},
       chatLogs: snapshot.chatLogs,
       winner: snapshot.winner,
     }),
@@ -168,6 +175,13 @@ export const useGameStore = create<GameStoreState & GameStoreActions>()((set) =>
   setWolfTally: (tally) => set({ wolfTally: tally }),
 
   setSkipVote: (skipCount, aliveCount) => set({ skipVote: { skipCount, aliveCount } }),
+
+  addDaySkipVote: (playerId) =>
+    set((state) => ({
+      daySkipVotes: state.daySkipVotes.includes(playerId)
+        ? state.daySkipVotes
+        : [...state.daySkipVotes, playerId],
+    })),
 
   setDawnInfo: (info) => set({ dawnInfo: info }),
 

@@ -7,12 +7,15 @@ import { PlayerCard } from './PlayerCard'
 import type { Role } from '@/types/game'
 
 export function VotePanel() {
-  const [myVote, setMyVote] = useState<string | null>(null)
   const alive = useGameStore((s) => s.alive)
+  const dayVotes = useGameStore((s) => s.dayVotes)
   const dayVoteTallies = useGameStore((s) => s.dayVoteTallies)
   const roles = useGameStore((s) => s.roles)
   const players = useRoomStore((s) => s.players)
   const myId = useAuthStore((s) => s.playerId)!
+
+  // Initialize from store so reconnecting players see their prior vote highlighted
+  const [myVote, setMyVote] = useState<string | null>(() => dayVotes[myId] ?? null)
 
   const isAlive = alive.includes(myId)
 

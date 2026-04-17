@@ -97,6 +97,8 @@ export interface GameSnapshot {
   daySkipVotes: string[]                   // Set<string> → string[]
   doctorLastProtected: string | null
   seerInspectedTargets: string[]           // Set<string> → string[]
+  seerResults: { targetId: string; isWolf: boolean }[]
+  wolfTally: Record<string, number>        // targetId → vote count (wolves only)
   chatLogs: {
     day: ChatMessage[]
     wolf: ChatMessage[]

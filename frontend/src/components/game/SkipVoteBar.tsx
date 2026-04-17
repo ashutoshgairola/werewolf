@@ -1,14 +1,16 @@
-import { useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { useAuthStore } from '@/stores/authStore'
 import { socketEvents } from '@/socket/events'
 
 export function SkipVoteBar() {
-  const [clicked, setClicked] = useState(false)
   const skipVote = useGameStore((s) => s.skipVote)
+  const daySkipVotes = useGameStore((s) => s.daySkipVotes)
+  const addDaySkipVote = useGameStore((s) => s.addDaySkipVote)
   const alive = useGameStore((s) => s.alive)
   const myId = useAuthStore((s) => s.playerId)
   const isAlive = alive.includes(myId ?? '')
+  // Derive from store so reconnecting players see their prior skip vote
+  const clicked = daySkipVotes.includes(myId ?? '')
 
   if (!isAlive) return null
 
@@ -17,8 +19,8 @@ export function SkipVoteBar() {
   const count = skipVote?.skipCount ?? 0
 
   function handleSkip() {
-    if (clicked) return
-    setClicked(true)
+    if (clicked || !myId) return
+    addDaySkipVote(myId)
     socketEvents.skipToVote()
   }
 

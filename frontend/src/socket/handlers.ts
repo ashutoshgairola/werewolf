@@ -87,6 +87,13 @@ export function registerHandlers(socket: Socket): void {
 
   socket.on('game:role_assigned', ({ role, knownAllies }: { role: Role; knownAllies?: string[] }) => {
     useGameStore.getState().setRole(role, knownAllies ?? [])
+    // Wolves: populate roles map with own role + all allies so InGamePlayerList shows pack roles
+    if (role === 'werewolf') {
+      const myId = useAuthStore.getState().playerId!
+      const wolfRoles: Record<string, Role> = { [myId]: 'werewolf' }
+      for (const id of knownAllies ?? []) wolfRoles[id] = 'werewolf'
+      useGameStore.getState().setRoles(wolfRoles)
+    }
   })
 
   socket.on(

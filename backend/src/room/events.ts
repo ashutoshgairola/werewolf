@@ -182,6 +182,22 @@ function buildGameSnapshot(game: GameState, playerId: string) {
     }
   }
 
+  // Wolf tally — only for living wolves
+  const wolfTally: Record<string, number> = {}
+  if (!isDead && role === 'werewolf') {
+    for (const targetId of game.nightActions.wolfVotes.values()) {
+      wolfTally[targetId] = (wolfTally[targetId] ?? 0) + 1
+    }
+  }
+
+  // Seer results — only for the seer, derived from inspected targets + role map
+  const seerResults: { targetId: string; isWolf: boolean }[] = []
+  if (!isDead && role === 'seer') {
+    for (const targetId of game.seerInspectedTargets) {
+      seerResults.push({ targetId, isWolf: game.roles.get(targetId) === 'werewolf' })
+    }
+  }
+
   return {
     roomCode: game.roomCode,
     phase: game.phase,
@@ -195,6 +211,8 @@ function buildGameSnapshot(game: GameState, playerId: string) {
     daySkipVotes: [...game.daySkipVotes],
     doctorLastProtected: role === 'doctor' ? game.doctorLastProtected : null,
     seerInspectedTargets: role === 'seer' ? [...game.seerInspectedTargets] : [],
+    seerResults,
+    wolfTally,
     winner: game.winner,
     chatLogs: {
       day: game.chatLogs.day,
