@@ -27,8 +27,8 @@ export function NightPanel() {
       <div className="flex-1 min-h-0 flex flex-col bg-moon" style={{ position: 'relative', zIndex: 1 }}>
         <PhaseHeader />
         <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 p-3">
-          {/* Role actions — fill, scrollable if needed */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          {/* Role actions — shrink-to-content on mobile, fill on desktop */}
+          <div className="min-h-0 overflow-y-auto sm:flex-1">
             <NightRoleContent role={role} />
           </div>
           {/* Pack chat — 36vh strip on mobile, right column on desktop */}

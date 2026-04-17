@@ -71,7 +71,16 @@ export function registerHandlers(socket: Socket): void {
       chatLogs: { day: [], wolf: [], ghost: [], system: [] },
       winner: null,
       roles: {},
-      players: [],
+      players: roomPlayers.map((p) => ({
+        playerId: p.playerId,
+        displayName: p.displayName,
+        isAlive: true,
+        connectionStatus: p.connectionStatus,
+        isAfk: false,
+        disconnectedAt: p.disconnectedAt,
+        outcome: null,
+        eliminatedRound: null,
+      })),
       round: 1,
     })
   })
