@@ -16,7 +16,7 @@ const CHANNEL_LABELS: Record<ChatChannel, string> = {
   day: '☀️ Town',
   wolf: '🐺 Pack',
   ghost: '👻 Spirits',
-  system: '📜 System',
+  system: '📜 System',  // kept for type-safety but never shown as a tab
 }
 
 export function ChatPanel({ defaultChannel = 'day', visibleChannels }: ChatPanelProps) {
@@ -46,9 +46,9 @@ export function ChatPanel({ defaultChannel = 'day', visibleChannels }: ChatPanel
   const isDead = !alive.includes(myId ?? '')
 
   const tabs: ChatChannel[] = visibleChannels ?? (() => {
-    const t: ChatChannel[] = ['day', 'system']
-    if (role === 'werewolf') t.splice(1, 0, 'wolf')
-    if (isDead) t.splice(t.indexOf('system'), 0, 'ghost')
+    const t: ChatChannel[] = ['day']
+    if (role === 'werewolf') t.push('wolf')
+    if (isDead) t.push('ghost')
     return t
   })()
 
@@ -178,7 +178,7 @@ export function ChatPanel({ defaultChannel = 'day', visibleChannels }: ChatPanel
 
       {!canSend && (
         <div className="border-t border-wood/20 p-2 text-center text-xs text-wood/40 font-body italic">
-          {activeChannel === 'system' ? 'Read-only channel' : 'You cannot send messages in this channel'}
+          You cannot send messages in this channel
         </div>
       )}
     </div>

@@ -7,6 +7,7 @@ import { PlayerList } from '@/components/lobby/PlayerList'
 import { SpectatorList } from '@/components/lobby/SpectatorList'
 import { ReadyButton } from '@/components/lobby/ReadyButton'
 import { SettingsPanel } from '@/components/lobby/SettingsPanel'
+import { GameRules } from '@/components/lobby/GameRules'
 import { ChatPanel } from '@/components/game/ChatPanel'
 
 export default function Lobby() {
@@ -45,6 +46,9 @@ export default function Lobby() {
         {/* Settings */}
         <SettingsPanel settings={settings} isHost={isHost} />
 
+        {/* How to play */}
+        <GameRules />
+
         {/* Actions */}
         <div className="flex flex-col gap-3 pb-4">
           {isHost ? (
@@ -80,7 +84,7 @@ export default function Lobby() {
       {/* Mobile: fixed 44vh strip at bottom so it's usable on any phone height */}
       {/* Desktop (lg): full-height right column */}
       <div className="h-[44vh] lg:h-auto lg:w-80 lg:border-l border-t lg:border-t-0 border-wood/20 flex-shrink-0 lg:flex-shrink lg:flex-1 min-h-0">
-        <ChatPanel visibleChannels={['day', 'system']} defaultChannel="day" />
+        <ChatPanel visibleChannels={['day']} defaultChannel="day" />
       </div>
     </div>
   )

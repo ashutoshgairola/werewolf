@@ -103,7 +103,7 @@ function DayDiscussionView() {
 
         {/* Chat — fills remaining space */}
         <div className="flex-1 min-h-0">
-          <ChatPanel visibleChannels={['day', 'system']} />
+          <ChatPanel visibleChannels={['day']} />
         </div>
 
         {/* Ghost chat for dead players — right rail on desktop, strip below on mobile */}
@@ -138,7 +138,7 @@ function DayVotingView() {
 
         {/* Chat — 26vh on mobile so the vote grid has breathing room; full column on desktop */}
         <div className="h-[26vh] sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
-          <ChatPanel visibleChannels={['day', 'system']} />
+          <ChatPanel visibleChannels={['day']} />
         </div>
       </div>
     </div>

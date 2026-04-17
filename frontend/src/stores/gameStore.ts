@@ -106,8 +106,9 @@ export const useGameStore = create<GameStoreState & GameStoreActions>()((set) =>
       dayVoteTallies: phase === 'DAY_VOTING' ? {} : state.dayVoteTallies,
       wolfTally: phase === 'NIGHT' ? {} : state.wolfTally,
       skipVote: phase === 'DAY_DISCUSSION' ? { skipCount: 0, aliveCount: state.alive.length } : state.skipVote,
-      // Clear dawnInfo when entering NIGHT (new round starts) so stale kill banner can't reappear
+      // Clear dawn/kill info when entering NIGHT so stale banners can't reappear next round
       dawnInfo: phase === 'NIGHT' ? null : state.dawnInfo,
+      youWereKilledBy: phase === 'NIGHT' ? null : state.youWereKilledBy,
       lynchedPlayerId: phase === 'DAY_RESULT' ? state.lynchedPlayerId : null,
     })),
 
