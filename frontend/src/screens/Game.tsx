@@ -9,7 +9,7 @@ import { PhaseHeader } from '@/components/game/PhaseHeader'
 import { VotePanel } from '@/components/game/VotePanel'
 import { SkipVoteBar } from '@/components/game/SkipVoteBar'
 import { ChatPanel } from '@/components/game/ChatPanel'
-import { PlayerList } from '@/components/lobby/PlayerList'
+import { InGamePlayerList } from '@/components/game/InGamePlayerList'
 import { useRoomStore } from '@/stores/roomStore'
 import { useAuthStore } from '@/stores/authStore'
 import { RoleAtmosphere } from '@/theme/RoleAtmosphere'
@@ -48,19 +48,12 @@ function DesktopMuteButton() {
 
 function DayDiscussionView() {
   const players = useRoomStore((s) => s.players)
-  const hostId = useRoomStore((s) => s.hostId)!
-  const myId = useAuthStore((s) => s.playerId)!
-  const roles = useGameStore((s) => s.roles)
   const alive = useGameStore((s) => s.alive)
   const dawnInfo = useGameStore((s) => s.dawnInfo)
+  const myId = useAuthStore((s) => s.playerId)!
   const [showPlayers, setShowPlayers] = useState(false)
 
   const isDead = !alive.includes(myId)
-
-  const enrichedPlayers = players.map((p) => ({
-    ...p,
-    role: roles[p.playerId],
-  }))
 
   const killedLastNight = dawnInfo?.killedPlayerId
     ? players.find((p) => p.playerId === dawnInfo.killedPlayerId)?.displayName ?? null
@@ -92,11 +85,7 @@ function DayDiscussionView() {
         </button>
         {showPlayers && (
           <div className="mt-2 max-h-48 overflow-y-auto bg-parchment border border-wood/20 rounded-lg p-2">
-            <PlayerList
-              players={enrichedPlayers as typeof players}
-              hostId={hostId}
-              isHost={myId === hostId}
-            />
+            <InGamePlayerList />
             <div className="mt-2">
               <SkipVoteBar />
             </div>
@@ -108,11 +97,7 @@ function DayDiscussionView() {
       <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 p-3">
         {/* Desktop sidebar: players + skip */}
         <div className="hidden sm:flex sm:w-52 lg:w-60 flex-shrink-0 flex-col gap-3 overflow-y-auto">
-          <PlayerList
-            players={enrichedPlayers as typeof players}
-            hostId={hostId}
-            isHost={myId === hostId}
-          />
+          <InGamePlayerList />
           <SkipVoteBar />
         </div>
 

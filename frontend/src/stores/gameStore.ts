@@ -13,6 +13,7 @@ import type {
 interface DawnInfo {
   killedPlayerId: string | null
   role?: Role
+  doctorSaved?: boolean
 }
 
 interface SkipVoteState {
@@ -43,6 +44,7 @@ interface GameStoreState {
     system: ChatMessage[]
   }
   dawnInfo: DawnInfo | null
+  youWereKilledBy: string[] | null  // wolf display names, private to the killed player
   lynchedPlayerId: string | null
   doctorLastProtected: string | null
   seerInspectedTargets: string[]
@@ -60,6 +62,7 @@ interface GameStoreActions {
   setWolfTally: (tally: Record<string, number>) => void
   setSkipVote: (skipCount: number, aliveCount: number) => void
   setDawnInfo: (info: DawnInfo) => void
+  setYouWereKilledBy: (killerNames: string[]) => void
   addSeerResult: (targetId: string, isWolf: boolean) => void
   setGameOver: (winner: Faction | null, finalRoles: Record<string, Role>, ghostChatLog: ChatMessage[]) => void
   setRoles: (roles: Record<string, Role>) => void
@@ -84,6 +87,7 @@ const INITIAL_STATE: GameStoreState = {
   seerResults: [],
   chatLogs: { day: [], wolf: [], ghost: [], system: [] },
   dawnInfo: null,
+  youWereKilledBy: null,
   lynchedPlayerId: null,
   doctorLastProtected: null,
   seerInspectedTargets: [],
@@ -165,6 +169,8 @@ export const useGameStore = create<GameStoreState & GameStoreActions>()((set) =>
   setSkipVote: (skipCount, aliveCount) => set({ skipVote: { skipCount, aliveCount } }),
 
   setDawnInfo: (info) => set({ dawnInfo: info }),
+
+  setYouWereKilledBy: (killerNames) => set({ youWereKilledBy: killerNames }),
 
   addSeerResult: (targetId, isWolf) =>
     set((state) => ({

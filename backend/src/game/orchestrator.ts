@@ -130,6 +130,12 @@ export async function advancePhase(roomCode: string, io: Server): Promise<void> 
         dead.outcome = 'killed_night'
         dead.eliminatedRound = game.round
         game.alive.delete(resolution.killedPlayerId)
+
+        // Tell the killed player privately who voted for them
+        const killerNames = [...game.nightActions.wolfVotes.entries()]
+          .filter(([, target]) => target === resolution.killedPlayerId)
+          .map(([wid]) => getPlayerName(game, wid))
+        io.to(`player:${resolution.killedPlayerId}`).emit('game:you_were_killed', { killerNames })
       }
 
       // Update seer state
@@ -152,6 +158,7 @@ export async function advancePhase(roomCode: string, io: Server): Promise<void> 
       io.to(roomCode).emit('game:dawn', {
         killedPlayerId: resolution.killedPlayerId,
         role: killRole ?? undefined,
+        doctorSaved: resolution.doctorSaved,
       })
 
       // Seer result — private

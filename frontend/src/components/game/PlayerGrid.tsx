@@ -16,6 +16,8 @@ interface PlayerGridProps {
   onSelect?: (playerId: string) => void
   /** Show dead players (greyed out, non-clickable) */
   showDead?: boolean
+  /** Whether to disable the current player's own card (default true) */
+  excludeSelf?: boolean
 }
 
 export function PlayerGrid({
@@ -25,6 +27,7 @@ export function PlayerGrid({
   badge,
   onSelect,
   showDead = false,
+  excludeSelf = true,
 }: PlayerGridProps) {
   const players = useRoomStore((s) => s.players)
   const alive = useGameStore((s) => s.alive)
@@ -40,7 +43,7 @@ export function PlayerGrid({
   })
 
   return (
-    <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-2">
+    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
       {displayed.map((p) => {
         const isAlive = alive.includes(p.playerId)
         const role = roles[p.playerId] as Role | undefined
@@ -56,7 +59,7 @@ export function PlayerGrid({
             role={role}
             voteCount={voteCount > 0 ? voteCount : undefined}
             selected={selectedId === p.playerId}
-            disabled={disabledIds.includes(p.playerId) || p.playerId === myId}
+            disabled={disabledIds.includes(p.playerId) || (excludeSelf && p.playerId === myId)}
             badge={badge?.(p.playerId)}
             onClick={() => isAlive && onSelect?.(p.playerId)}
           />

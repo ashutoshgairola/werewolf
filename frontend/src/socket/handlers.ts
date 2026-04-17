@@ -97,9 +97,9 @@ export function registerHandlers(socket: Socket): void {
 
   socket.on(
     'game:dawn',
-    ({ killedPlayerId, role }: { killedPlayerId: string | null; role?: Role }) => {
+    ({ killedPlayerId, role, doctorSaved }: { killedPlayerId: string | null; role?: Role; doctorSaved?: boolean }) => {
       const { round, roles } = useGameStore.getState()
-      useGameStore.getState().setDawnInfo({ killedPlayerId, role })
+      useGameStore.getState().setDawnInfo({ killedPlayerId, role, doctorSaved })
       if (killedPlayerId) {
         useGameStore.getState().markPlayerDead(killedPlayerId, 'killed_night', round)
         // Reveal the killed player's role so their card shows the icon
@@ -110,6 +110,10 @@ export function registerHandlers(socket: Socket): void {
       playSound(killedPlayerId ? 'death_toll' : 'dawn_bell')
     }
   )
+
+  socket.on('game:you_were_killed', ({ killerNames }: { killerNames: string[] }) => {
+    useGameStore.getState().setYouWereKilledBy(killerNames)
+  })
 
   socket.on(
     'game:player_eliminated',
