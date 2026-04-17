@@ -10,6 +10,8 @@ interface PlayerCardProps {
   voterInitials?: string[]
   selected?: boolean
   disabled?: boolean
+  /** When true, dead players show normal initials/name but greyed — no skull or strikethrough */
+  greyDead?: boolean
   badge?: React.ReactNode
   onClick?: () => void
 }
@@ -31,10 +33,14 @@ export function PlayerCard({
   voterInitials,
   selected,
   disabled,
+  greyDead = false,
   badge,
   onClick,
 }: PlayerCardProps) {
   const dead = !isAlive
+
+  // greyDead mode: dead card looks like a normal card but greyed/disabled (no skull, no strikethrough)
+  const useGhostStyle = dead && !greyDead
 
   return (
     <button
@@ -42,8 +48,10 @@ export function PlayerCard({
       disabled={disabled || dead}
       className={[
         'relative flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all',
-        dead
+        useGhostStyle
           ? 'bg-ink/10 border-ink/20 opacity-50 cursor-default'
+          : dead  // greyDead
+          ? 'bg-parchment border-wood/20 opacity-40 cursor-default'
           : selected
           ? 'bg-candle/20 border-candle shadow-md scale-105'
           : disabled
@@ -55,24 +63,24 @@ export function PlayerCard({
       <div
         className={[
           'w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-tavern flex-shrink-0',
-          dead ? 'bg-ink/20 text-ink/40' : 'bg-wood text-parchment',
+          useGhostStyle ? 'bg-ink/20 text-ink/40' : 'bg-wood text-parchment',
         ].join(' ')}
       >
-        {dead ? (role ? ROLE_INFO[role].icon : '💀') : initials(displayName)}
+        {useGhostStyle ? (role ? ROLE_INFO[role].icon : '💀') : initials(displayName)}
       </div>
 
       {/* Name */}
       <span
         className={[
           'text-xs font-body text-center leading-tight max-w-full truncate',
-          dead ? 'line-through text-ink/40' : 'text-ink',
+          useGhostStyle ? 'line-through text-ink/40' : 'text-ink',
         ].join(' ')}
       >
         {displayName}
       </span>
 
-      {/* Role (dead only) */}
-      {dead && role && (
+      {/* Role label (ghost style dead only) */}
+      {useGhostStyle && role && (
         <span className="text-xs text-ink/50 font-body">{ROLE_INFO[role].name}</span>
       )}
 

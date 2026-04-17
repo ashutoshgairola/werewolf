@@ -52,6 +52,7 @@ export function VotePanel() {
                 displayName={p.displayName}
                 isAlive={isPlayerAlive}
                 role={role}
+                greyDead={true}
                 voteCount={voteCount > 0 ? voteCount : undefined}
                 selected={myVote === p.playerId}
                 disabled={!isAlive || p.playerId === myId}

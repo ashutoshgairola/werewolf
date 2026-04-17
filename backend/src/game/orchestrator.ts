@@ -136,6 +136,10 @@ export async function advancePhase(roomCode: string, io: Server): Promise<void> 
           .filter(([, target]) => target === resolution.killedPlayerId)
           .map(([wid]) => getPlayerName(game, wid))
         io.to(`player:${resolution.killedPlayerId}`).emit('game:you_were_killed', { killerNames })
+
+        // Reveal all roles privately to the newly dead player (spirits can see everything)
+        const allRoles = Object.fromEntries(game.roles)
+        io.to(`player:${resolution.killedPlayerId}`).emit('game:roles_revealed', { roles: allRoles })
       }
 
       // Update seer state
@@ -218,6 +222,10 @@ export async function advancePhase(roomCode: string, io: Server): Promise<void> 
           role,
           cause: 'vote',
         })
+
+        // Reveal all roles privately to the newly lynched player
+        const allRoles = Object.fromEntries(game.roles)
+        io.to(`player:${resolution.eliminatedPlayerId}`).emit('game:roles_revealed', { roles: allRoles })
       } else {
         game.chatLogs.system.push(systemMessage('The vote was tied. Nobody was lynched.'))
       }

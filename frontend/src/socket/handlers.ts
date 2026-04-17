@@ -124,6 +124,10 @@ export function registerHandlers(socket: Socket): void {
     useGameStore.getState().setYouWereKilledBy(killerNames)
   })
 
+  socket.on('game:roles_revealed', ({ roles }: { roles: Record<string, Role> }) => {
+    useGameStore.getState().setRoles(roles)
+  })
+
   socket.on(
     'game:player_eliminated',
     ({ playerId, role }: { playerId: string; role: Role }) => {
