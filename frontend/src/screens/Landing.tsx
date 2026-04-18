@@ -89,25 +89,25 @@ export default function Landing() {
   }
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center bg-parchment px-4 py-4 sm:py-6">
+    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col items-center justify-center bg-navy px-4 py-4 sm:py-6">
       {/* Header */}
       <div className="text-center mb-4 sm:mb-6">
         <div className="text-4xl sm:text-7xl mb-1 sm:mb-2">🐺</div>
-        <h1 className="font-tavern text-3xl sm:text-5xl text-wood-dark mb-0.5 sm:mb-1">Werewolf</h1>
-        <p className="text-wood font-body italic text-sm sm:text-lg">A game of deception and deduction</p>
+        <h1 className="font-tavern text-3xl sm:text-5xl text-white mb-0.5 sm:mb-1">Werewolf</h1>
+        <p className="text-white/60 font-body italic text-sm sm:text-lg">A game of deception and deduction</p>
       </div>
 
       {/* Card */}
-      <div className="bg-parchment-light border-2 border-wood rounded-xl shadow-lg w-full max-w-sm p-5 sm:p-7">
+      <div className="bg-navy-mid border-2 border-cyan-game/25 rounded-xl shadow-lg w-full max-w-sm p-5 sm:p-7">
         {kickMessage && (
-          <div className="bg-ember/10 border border-ember text-ember text-sm rounded p-3 mb-4">
+          <div className="bg-action-vote/10 border border-action-vote text-action-vote text-sm rounded p-3 mb-4">
             {kickMessage}
           </div>
         )}
 
         {/* Name input */}
         <div className="mb-5">
-          <label className="block font-body text-wood-dark text-sm mb-1.5" htmlFor="display-name">
+          <label className="block font-body text-white text-sm mb-1.5" htmlFor="display-name">
             Your Name
           </label>
           <input
@@ -117,17 +117,17 @@ export default function Landing() {
             onChange={(e) => setDisplayName(e.target.value)}
             maxLength={20}
             placeholder="Enter your name..."
-            className="w-full bg-parchment border border-wood rounded px-3 py-2 text-ink font-body focus:outline-none focus:ring-2 focus:ring-candle"
+            className="w-full bg-navy border border-cyan-game/25 rounded px-3 py-2 text-white placeholder-white/30 font-body focus:outline-none focus:ring-2 focus:ring-cyan-game"
           />
           {nameError && (
-            <p className="text-ember text-xs mt-1">{nameError}</p>
+            <p className="text-action-vote text-xs mt-1">{nameError}</p>
           )}
         </div>
 
         {/* Join code input (visible in join mode) */}
         {mode === 'join' && (
           <div className="mb-5">
-            <label className="block font-body text-wood-dark text-sm mb-1.5" htmlFor="room-code">
+            <label className="block font-body text-white text-sm mb-1.5" htmlFor="room-code">
               Room Code
             </label>
             <input
@@ -137,13 +137,13 @@ export default function Landing() {
               onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
               maxLength={6}
               placeholder="XXXXXX"
-              className="w-full bg-parchment border border-wood rounded px-3 py-2 text-ink font-mono text-lg tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-candle"
+              className="w-full bg-navy border border-cyan-game/25 rounded px-3 py-2 text-white placeholder-white/30 font-mono text-lg tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-cyan-game"
             />
           </div>
         )}
 
         {error && !kickMessage && (
-          <p className="text-ember text-sm mb-4">{error}</p>
+          <p className="text-action-vote text-sm mb-4">{error}</p>
         )}
 
         {/* Action buttons */}
@@ -192,7 +192,7 @@ export default function Landing() {
         </div>
       </div>
 
-      <p className="text-wood/50 text-xs mt-4">4–10 players • No signup required</p>
+      <p className="text-white/30 text-xs mt-4">4–10 players • No signup required</p>
     </div>
   )
 }
