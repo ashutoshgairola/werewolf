@@ -13,6 +13,7 @@ interface SeatCardProps {
   isWolfAlly?: boolean
   action?: SeatAction
   disabled?: boolean
+  selected?: boolean
   onAction?: () => void
 }
 
@@ -43,6 +44,7 @@ export function SeatCard({
   isWolfAlly = false,
   action = null,
   disabled = false,
+  selected = false,
   onAction,
 }: SeatCardProps) {
   const color = getPlayerColor(playerId)
@@ -51,6 +53,8 @@ export function SeatCard({
     ? 'rgba(255,255,255,0.15)'
     : isWolfAlly
     ? '#ef4444'
+    : selected
+    ? '#ffffff'
     : color
 
   const avatarOpacity = isAlive ? 1 : 0.35
@@ -84,10 +88,11 @@ export function SeatCard({
         <div
           className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden transition-all duration-300 flex-shrink-0"
           style={{
-            background: `${color}22`,
-            border: `2.5px solid ${ringColor}`,
+            background: selected ? `${color}44` : `${color}22`,
+            border: `${selected ? 3 : 2.5}px solid ${ringColor}`,
             opacity: avatarOpacity,
             filter: isAlive ? 'none' : 'grayscale(100%)',
+            boxShadow: selected ? `0 0 12px 3px ${color}88` : undefined,
           }}
         >
           <span className="font-bold text-base select-none" style={{ color }}>

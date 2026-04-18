@@ -8,7 +8,6 @@ import { SpectatorList } from '@/components/lobby/SpectatorList'
 import { ReadyButton } from '@/components/lobby/ReadyButton'
 import { SettingsPanel } from '@/components/lobby/SettingsPanel'
 import { GameRules } from '@/components/lobby/GameRules'
-import { ChatPanel } from '@/components/game/ChatPanel'
 
 export default function Lobby() {
   const roomCode = useRoomStore((s) => s.roomCode)!
@@ -23,11 +22,9 @@ export default function Lobby() {
   const connectedCount = players.filter((p) => p.connectionStatus === 'connected').length
 
   return (
-    // Mobile: fixed-height chat at bottom, scrollable content above. Desktop: side-by-side.
-    <div className="flex-1 min-h-0 flex flex-col lg:flex-row bg-navy overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col bg-navy overflow-hidden">
 
-      {/* ── Left panel: config + players (scrollable, fills remaining space above chat on mobile) ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-5 space-y-4 lg:max-w-lg">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-5 space-y-4 max-w-lg mx-auto w-full">
         {/* Header */}
         <div className="text-center pt-2">
           <h1 className="font-tavern text-3xl text-white mb-0.5">Werewolf</h1>
@@ -80,12 +77,6 @@ export default function Lobby() {
         </div>
       </div>
 
-      {/* ── Right panel: lobby chat ── */}
-      {/* Mobile: fixed 44vh strip at bottom so it's usable on any phone height */}
-      {/* Desktop (lg): full-height right column */}
-      <div className="h-[44vh] lg:h-auto lg:w-80 lg:border-l border-t lg:border-t-0 border-cyan-game/15 flex-shrink-0 lg:flex-shrink lg:flex-1 min-h-0">
-        <ChatPanel sendChannel="day" canSend={true} />
-      </div>
     </div>
   )
 }

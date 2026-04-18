@@ -1,4 +1,5 @@
 // frontend/src/screens/Game.tsx
+import { useState, useEffect } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { useRoomStore } from '@/stores/roomStore'
 import { useAuthStore } from '@/stores/authStore'
@@ -55,6 +56,10 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
   const roomPlayers = useRoomStore((s) => s.players)
   const seerCanActRound1 = useRoomStore((s) => s.settings.seerCanActRound1)
 
+  // Optimistic night action: track which player the current user acted on this night
+  const [optimisticTarget, setOptimisticTarget] = useState<string | null>(null)
+  useEffect(() => { setOptimisticTarget(null) }, [phase, round])
+
   const amAlive = alive.includes(myId)
   const half = Math.ceil(roomPlayers.length / 2)
   const seatPlayers = side === 'left'
@@ -63,9 +68,9 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
 
   function handleAction(playerId: string, action: SeatAction) {
     if (!action) return
-    if (action === 'kill') playSound('wolf_action')
-    else if (action === 'check') playSound('seer_action')
-    else if (action === 'protect') playSound('doctor_action')
+    if (action === 'kill') { playSound('wolf_action'); setOptimisticTarget(playerId) }
+    else if (action === 'check') { playSound('seer_action'); setOptimisticTarget(playerId) }
+    else if (action === 'protect') { playSound('doctor_action'); setOptimisticTarget(playerId) }
     else playSound('wolf_action')
     if (action === 'vote') socketEvents.dayVote(playerId)
     if (action === 'kill') socketEvents.wolfVote(playerId)
@@ -100,12 +105,15 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
 
         const action = seatAction(phase, myRole, isMe, amAlive, isPlayerAlive, round, seerCanActRound1)
 
-        // Disabled when: is me, I'm dead, or seer already inspected this person
+        // Disabled when: is me, I'm dead, seer already inspected, or optimistic action already sent this night
+        const nightActionDone = phase === 'NIGHT' && optimisticTarget !== null
         const isDisabled =
           isMe ||
           !amAlive ||
-          (myRole === 'seer' && phase === 'NIGHT' && alreadyInspected)
-        // Note: doctor re-protecting is now allowed (removed doctorLastProtected constraint per user request)
+          (myRole === 'seer' && phase === 'NIGHT' && alreadyInspected) ||
+          (nightActionDone && p.playerId !== optimisticTarget)
+
+        const isSelected = phase === 'NIGHT' && optimisticTarget === p.playerId
 
         return (
           <SeatCard
@@ -118,6 +126,7 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
             isWolfAlly={phase === 'NIGHT' && myRole === 'werewolf' && isWolfAlly}
             action={action}
             disabled={isDisabled}
+            selected={isSelected}
             onAction={() => handleAction(p.playerId, action)}
           />
         )
