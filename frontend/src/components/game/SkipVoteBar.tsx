@@ -25,21 +25,21 @@ export function SkipVoteBar() {
   }
 
   return (
-    <div className="flex items-center gap-3 bg-parchment-light border border-wood/30 rounded-lg px-4 py-2">
+    <div className="flex items-center gap-3 bg-navy-light/50 border border-cyan-game/20 rounded-xl px-4 py-2 mx-2 flex-shrink-0">
       <button
         onClick={handleSkip}
         disabled={clicked}
-        className="text-sm font-body text-candle hover:text-candle-dim disabled:opacity-50 disabled:cursor-default underline"
+        className="text-sm font-sans text-cyan-game hover:text-cyan-glow disabled:opacity-40 disabled:cursor-default underline"
       >
-        Skip to Vote
+        {clicked ? 'Voted to skip' : 'Skip to Vote'}
       </button>
-      <span className="text-xs text-wood/50 font-body">
-        {count}/{needed} needed
+      <span className="text-xs text-white/40 font-sans">
+        {count}/{needed}
       </span>
       {count > 0 && (
-        <div className="flex-1 h-1 bg-wood/20 rounded-full overflow-hidden">
+        <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
           <div
-            className="h-full bg-candle rounded-full transition-all"
+            className="h-full bg-cyan-game rounded-full transition-all"
             style={{ width: `${Math.min(100, (count / needed) * 100)}%` }}
           />
         </div>

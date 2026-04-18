@@ -91,14 +91,8 @@ export function ChatPanel({ sendChannel = 'day', canSend = true }: ChatPanelProp
   const myId = useAuthStore((s) => s.playerId) ?? ''
   const isDead = !alive.includes(myId)
 
-  // Merge day + system messages, sorted by order they were added (they arrive in order)
-  const dayMessages = chatLogs[sendChannel] ?? []
-  const systemMessages = chatLogs.system ?? []
-
-  // Interleave: system messages that have a messageId in order with day messages
-  // Since we can't rely on timestamps, just concat and let server ordering handle it
-  // The server sends system messages on 'day' channel in the new design
-  const messages = dayMessages
+  // System messages arrive with senderId === null on the day/wolf channel
+  const messages = chatLogs[sendChannel] ?? []
 
   useEffect(() => {
     const el = listRef.current
@@ -108,7 +102,7 @@ export function ChatPanel({ sendChannel = 'day', canSend = true }: ChatPanelProp
     } else {
       setNewBadge(true)
     }
-  }, [messages.length, systemMessages.length])
+  }, [messages.length])
 
   function handleScroll() {
     const el = listRef.current
@@ -151,13 +145,9 @@ export function ChatPanel({ sendChannel = 'day', canSend = true }: ChatPanelProp
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto py-2 space-y-0.5 min-h-0"
       >
-        {messages.length === 0 && systemMessages.length === 0 && (
+        {messages.length === 0 && (
           <p className="text-center text-white/30 text-xs py-6 italic">No messages yet</p>
         )}
-        {/* System messages shown above */}
-        {systemMessages.map((msg) => (
-          <SystemBubble key={msg.messageId} text={msg.text} />
-        ))}
         {messages.map((msg) => {
           if (msg.senderId === null) {
             return <SystemBubble key={msg.messageId} text={msg.text} />

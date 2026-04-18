@@ -68,14 +68,10 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
 
   function handleAction(playerId: string, action: SeatAction) {
     if (!action) return
-    if (action === 'kill') { playSound('wolf_action'); setOptimisticTarget(playerId) }
-    else if (action === 'check') { playSound('seer_action'); setOptimisticTarget(playerId) }
-    else if (action === 'protect') { playSound('doctor_action'); setOptimisticTarget(playerId) }
-    else playSound('wolf_action')
-    if (action === 'vote') socketEvents.dayVote(playerId)
-    if (action === 'kill') socketEvents.wolfVote(playerId)
-    if (action === 'check') socketEvents.seerInspect(playerId)
-    if (action === 'protect') socketEvents.doctorProtect(playerId)
+    if (action === 'vote') { playSound('vote_thud'); socketEvents.dayVote(playerId); return }
+    if (action === 'kill') { playSound('wolf_action'); setOptimisticTarget(playerId); socketEvents.wolfVote(playerId) }
+    else if (action === 'check') { playSound('seer_action'); setOptimisticTarget(playerId); socketEvents.seerInspect(playerId) }
+    else if (action === 'protect') { playSound('doctor_action'); setOptimisticTarget(playerId); socketEvents.doctorProtect(playerId) }
   }
 
   return (

@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/authStore'
 import { socketEvents } from '@/socket/events'
 import { ROLE_INFO } from '@/types/game'
 import type { Role } from '@/types/game'
-import { ChatMessage } from '@/components/game/ChatMessage'
 
 export default function GameOver() {
   const winner = useGameStore((s) => s.winner)
@@ -85,7 +84,10 @@ export default function GameOver() {
           {ghostOpen && (
             <div className="bg-black/20 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1">
               {ghostLog.map((msg) => (
-                <ChatMessage key={msg.messageId} message={msg} />
+                <div key={msg.messageId} className="text-xs text-white/60 font-sans">
+                  {msg.senderId ? <strong className="text-white/80">{msg.senderName}: </strong> : null}
+                  {msg.text}
+                </div>
               ))}
             </div>
           )}
