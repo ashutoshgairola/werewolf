@@ -35,7 +35,7 @@ export default function GameOver() {
         <h1 className="font-tavern text-2xl sm:text-5xl text-white drop-shadow-lg">
           {isWolvesWin ? 'Werewolves Win!' : 'Village Wins!'}
         </h1>
-        <p className="text-white/60 font-body text-sm sm:text-base mt-1">
+        <p className="text-white/60 font-sans text-sm sm:text-base mt-1">
           {isWolvesWin ? 'Darkness has consumed the village…' : 'Peace returns to the village!'}
         </p>
       </div>
@@ -45,7 +45,7 @@ export default function GameOver() {
         <h2 className="font-tavern text-white/80 text-xs uppercase tracking-widest mb-3 text-center">
           Final Roles
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
           {players.map((p) => {
             const role = roles[p.playerId] as Role | undefined
             const survived = alive.includes(p.playerId)
@@ -60,10 +60,10 @@ export default function GameOver() {
               >
                 <span className="text-lg flex-shrink-0">{info?.icon ?? '?'}</span>
                 <div className="min-w-0">
-                  <p className={`text-xs font-body truncate ${survived ? 'text-white' : 'text-white/50 line-through'}`}>
+                  <p className={`text-xs font-sans truncate ${survived ? 'text-white' : 'text-white/50 line-through'}`}>
                     {p.displayName}
                   </p>
-                  <p className="text-xs text-white/50 font-body">{info?.name ?? 'Unknown'}</p>
+                  <p className="text-xs text-white/50 font-sans">{info?.name ?? 'Unknown'}</p>
                 </div>
                 {survived && <span className="ml-auto text-xs text-green-300">✓</span>}
               </div>
@@ -77,7 +77,7 @@ export default function GameOver() {
         <div className="w-full max-w-lg">
           <button
             onClick={() => setGhostOpen((o) => !o)}
-            className="w-full text-left text-white/60 text-sm font-body flex items-center gap-2 mb-2"
+            className="w-full text-left text-white/60 text-sm font-sans flex items-center gap-2 mb-2"
           >
             <span>👻 Spirit Chat ({ghostLog.length} messages)</span>
             <span>{ghostOpen ? '▲' : '▼'}</span>
@@ -104,7 +104,7 @@ export default function GameOver() {
         )}
         <button
           onClick={() => socketEvents.leaveRoom()}
-          className="w-full bg-black/20 hover:bg-black/30 text-white/70 font-body py-2 rounded-xl transition-colors text-sm"
+          className="w-full bg-black/20 hover:bg-black/30 text-white/70 font-sans py-2 rounded-xl transition-colors text-sm"
         >
           Leave Game
         </button>
