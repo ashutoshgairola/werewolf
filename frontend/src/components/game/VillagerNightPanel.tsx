@@ -1,30 +1,14 @@
-import { useEffect, useState } from 'react'
-
 export function VillagerNightPanel() {
-  const [zOffset, setZOffset] = useState(0)
-
-  useEffect(() => {
-    const id = setInterval(() => setZOffset((n) => (n + 1) % 3), 1200)
-    return () => clearInterval(id)
-  }, [])
-
-  const zz = ['z', 'zz', 'zzz'][zOffset]
-
   return (
-    <div className="flex flex-col items-center justify-center gap-5 py-8 text-center h-full">
-      <span className="text-6xl">😴</span>
-      <div>
-        <p className="font-tavern text-parchment text-2xl mb-1">You are sleeping…</p>
-        <p className="text-parchment/50 font-body text-sm">
-          The night forces are at work. Rest and wait for dawn.
-        </p>
+    <div className="flex flex-col items-center justify-center gap-4 text-center">
+      <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full flex items-center justify-center text-4xl sm:text-5xl
+        bg-gradient-to-br from-navy-mid to-navy
+        shadow-[0_0_20px_rgba(100,100,200,0.25)] animate-pulse">
+        🌙
       </div>
-      <p
-        className="text-parchment/30 font-tavern text-4xl select-none transition-all duration-500"
-        style={{ letterSpacing: '0.2em', opacity: 0.4 + zOffset * 0.2 }}
-      >
-        {zz}
-      </p>
+      <p className="text-white text-base sm:text-lg font-bold">Night falls...</p>
+      <div className="w-10 h-10 border-[3px] border-cyan-game/20 border-t-cyan-game rounded-full animate-spin" />
+      <p className="text-white/50 text-sm">Waiting for night actions to complete</p>
     </div>
   )
 }

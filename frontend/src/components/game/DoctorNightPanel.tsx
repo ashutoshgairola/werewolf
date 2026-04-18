@@ -1,46 +1,14 @@
-import { useState } from 'react'
-import { useGameStore } from '@/stores/gameStore'
-import { socketEvents } from '@/socket/events'
-import { PlayerGrid } from './PlayerGrid'
-import { playSound } from '@/hooks/useSoundManager'
-
 export function DoctorNightPanel() {
-  const [protected_, setProtected] = useState(false)
-  const lastProtected = useGameStore((s) => s.doctorLastProtected)
-
-  function handleSelect(id: string) {
-    if (protected_) return
-    setProtected(true)
-    socketEvents.doctorProtect(id)
-    playSound('doctor_action')
-  }
-
-  const disabledIds = [
-    ...(lastProtected ? [lastProtected] : []),
-  ]
-
   return (
-    <div className="space-y-4">
-      <div className="text-center">
-        <p className="font-tavern text-parchment text-lg">Protect a player</p>
-        <p className="text-parchment/50 text-sm font-body">
-          {protected_
-            ? 'You have chosen who to protect tonight'
-            : 'Choose a player to shield — you can protect yourself'}
-        </p>
-        {lastProtected && (
-          <p className="text-parchment/30 text-xs font-body mt-1">
-            Cannot protect the same player twice in a row
-          </p>
-        )}
+    <div className="flex flex-col items-center justify-center gap-4 text-center">
+      <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full flex items-center justify-center text-5xl sm:text-6xl
+        bg-gradient-to-br from-green-900 to-green-950
+        shadow-[0_0_50px_rgba(76,217,100,0.5),0_0_100px_rgba(76,217,100,0.18)] animate-pulse">
+        💉
       </div>
-
-      <PlayerGrid
-        excludeSelf={false}
-        disabledIds={disabledIds}
-        onSelect={protected_ ? undefined : handleSelect}
-        showDead={false}
-      />
+      <p className="text-white text-lg sm:text-xl font-bold">Choose a player to protect</p>
+      <p className="text-green-400/70 text-sm">They'll survive the wolf attack tonight</p>
+      <p className="text-white/40 text-sm">Use the PROTECT button on a player seat</p>
     </div>
   )
 }
