@@ -81,7 +81,11 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
       playSound('wolf_action'); setOptimisticTarget(playerId); socketEvents.wolfVote(playerId)
       return
     }
-    if (action === 'check') { playSound('seer_action'); setOptimisticTarget(playerId); socketEvents.seerInspect(playerId) }
+    if (action === 'check') {
+      if (optimisticTarget === playerId) { setOptimisticTarget(null); return }
+      playSound('seer_action'); setOptimisticTarget(playerId); socketEvents.seerInspect(playerId)
+      return
+    }
     if (action === 'protect') { playSound('doctor_action'); setOptimisticTarget(playerId); socketEvents.doctorProtect(playerId) }
   }
 

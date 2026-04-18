@@ -74,8 +74,10 @@ export function SeatCard({
     ? 'from-red-500 to-red-700 text-white border-red-800'
     : 'from-yellow-300 to-yellow-600 text-black border-yellow-700'
 
-  // Show '✓ KILL' on the selected kill seat so the wolf sees clear confirmation
-  const buttonLabel = selected && action === 'kill' ? '✓ KILL' : ACTION_LABEL[action!]
+  const buttonLabel =
+    selected && action === 'kill' ? '✓ KILL' :
+    selected && action === 'check' ? '✓ CHECK' :
+    ACTION_LABEL[action!]
 
   return (
     <div className="flex flex-col items-center gap-1 pt-2" style={{ width: 72 }}>
