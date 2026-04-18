@@ -1,170 +1,197 @@
 // frontend/src/screens/Game.tsx
-import { useState } from 'react'
 import { useGameStore } from '@/stores/gameStore'
+import { useRoomStore } from '@/stores/roomStore'
+import { useAuthStore } from '@/stores/authStore'
+import { SceneBackground } from '@/theme/SceneBackground'
+import { TopBar } from '@/components/game/TopBar'
+import { TeamStrengthBar } from '@/components/game/TeamStrengthBar'
+import { SeatCard } from '@/components/game/SeatCard'
+import type { SeatAction } from '@/components/game/SeatCard'
 import { RoleCard } from '@/components/game/RoleCard'
 import { NightPanel } from '@/components/game/NightPanel'
 import { DawnPanel } from '@/components/game/DawnPanel'
 import { DayResultPanel } from '@/components/game/DayResultPanel'
-import { PhaseHeader } from '@/components/game/PhaseHeader'
-import { VotePanel } from '@/components/game/VotePanel'
-import { SkipVoteBar } from '@/components/game/SkipVoteBar'
 import { ChatPanel } from '@/components/game/ChatPanel'
-import { InGamePlayerList } from '@/components/game/InGamePlayerList'
-import { useRoomStore } from '@/stores/roomStore'
-import { useAuthStore } from '@/stores/authStore'
-import { RoleAtmosphere } from '@/theme/RoleAtmosphere'
-import { useSoundManager } from '@/hooks/useSoundManager'
+import { SkipVoteBar } from '@/components/game/SkipVoteBar'
+import { socketEvents } from '@/socket/events'
+import { playSound } from '@/hooks/useSoundManager'
+import type { Role, GamePhase } from '@/types/game'
 
-function MuteButton() {
-  const { muted, toggleMute } = useSoundManager()
-  return (
-    // Mobile: fixed top-left, hidden on sm+ (desktop has DesktopMuteButton)
-    <button
-      onClick={toggleMute}
-      className="fixed top-3 left-3 z-50 sm:hidden w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-base border border-white/10"
-      aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
-    >
-      {muted ? '🔇' : '🔊'}
-    </button>
-  )
+function sceneVariant(phase: GamePhase | null): 'night' | 'day' | 'wolf' {
+  if (phase === 'NIGHT') return 'night'
+  if (phase === 'DAY_DISCUSSION' || phase === 'DAY_VOTING' || phase === 'DAY_RESULT' || phase === 'DAWN') return 'day'
+  return 'night'
 }
 
-function DesktopMuteButton() {
-  const { muted, toggleMute } = useSoundManager()
-  return (
-    <button
-      onClick={toggleMute}
-      className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full bg-black/30 hover:bg-black/50 text-sm border border-white/10 transition-colors flex-shrink-0"
-      aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
-    >
-      {muted ? '🔇' : '🔊'}
-    </button>
-  )
+function seatAction(
+  phase: GamePhase | null,
+  myRole: Role | null,
+  isMe: boolean,
+  amAlive: boolean,
+  targetIsAlive: boolean,
+): SeatAction {
+  if (isMe || !amAlive || !targetIsAlive) return null
+  if (phase === 'DAY_VOTING') return 'vote'
+  if (phase === 'NIGHT') {
+    if (myRole === 'werewolf') return 'kill'
+    if (myRole === 'seer') return 'check'
+    if (myRole === 'doctor') return 'protect'
+  }
+  return null
 }
 
-// ── Day Discussion ────────────────────────────────────────────────────────────
-// Mobile: phase header → killed banner → [Players toggle] → Chat fills rest
-// Desktop: header → 3-col (players sidebar | chat | ghost chat)
-
-function DayDiscussionView() {
-  const players = useRoomStore((s) => s.players)
-  const alive = useGameStore((s) => s.alive)
-  const dawnInfo = useGameStore((s) => s.dawnInfo)
+function SeatColumn({ side }: { side: 'left' | 'right' }) {
+  const phase = useGameStore((s) => s.phase)
+  const myRole = useGameStore((s) => s.role)
   const myId = useAuthStore((s) => s.playerId)!
-  const [showPlayers, setShowPlayers] = useState(false)
+  const alive = useGameStore((s) => s.alive)
+  const roles = useGameStore((s) => s.roles)
+  const knownAllies = useGameStore((s) => s.knownAllies)
+  const roomPlayers = useRoomStore((s) => s.players)
 
+  const amAlive = alive.includes(myId)
+  const half = Math.ceil(roomPlayers.length / 2)
+  const seatPlayers = side === 'left'
+    ? roomPlayers.slice(0, half)
+    : roomPlayers.slice(half)
+
+  function handleAction(playerId: string, action: SeatAction) {
+    if (!action) return
+    playSound('wolf_action')
+    if (action === 'vote') socketEvents.dayVote(playerId)
+    if (action === 'kill') socketEvents.wolfVote(playerId)
+    if (action === 'check') socketEvents.seerInspect(playerId)
+    if (action === 'protect') socketEvents.doctorProtect(playerId)
+  }
+
+  return (
+    <div
+      className={`flex flex-col justify-center gap-2 sm:gap-3 py-4 flex-shrink-0 ${
+        side === 'left' ? 'items-start pl-2 sm:pl-3' : 'items-end pr-2 sm:pr-3'
+      }`}
+      style={{ width: '88px' }}
+    >
+      {seatPlayers.map((p) => {
+        const seatNum = roomPlayers.indexOf(p) + 1
+        const isMe = p.playerId === myId
+        const isPlayerAlive = alive.includes(p.playerId)
+        const role = roles[p.playerId] as Role | undefined
+        const isWolfAlly = knownAllies.includes(p.playerId)
+        const action = seatAction(phase, myRole, isMe, amAlive, isPlayerAlive)
+
+        const showRole =
+          isMe ||
+          !isPlayerAlive ||
+          (phase === 'NIGHT' && myRole === 'werewolf' && isWolfAlly)
+
+        return (
+          <SeatCard
+            key={p.playerId}
+            seatNumber={seatNum}
+            displayName={p.displayName}
+            role={showRole ? role : undefined}
+            isAlive={isPlayerAlive}
+            isWolfAlly={phase === 'NIGHT' && myRole === 'werewolf' && isWolfAlly}
+            action={action}
+            disabled={isMe || !amAlive}
+            onAction={() => handleAction(p.playerId, action)}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+function CenterContent() {
+  const phase = useGameStore((s) => s.phase)
+  const alive = useGameStore((s) => s.alive)
+  const myId = useAuthStore((s) => s.playerId)!
   const isDead = !alive.includes(myId)
 
-  const killedLastNight = dawnInfo?.killedPlayerId
-    ? players.find((p) => p.playerId === dawnInfo.killedPlayerId)?.displayName ?? null
-    : null
-
-  return (
-    <div className="flex-1 min-h-0 flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-      {/* Header row */}
-      <div className="flex items-center justify-between flex-shrink-0 border-b border-wood/20">
-        <PhaseHeader />
-        <DesktopMuteButton />
-      </div>
-
-      {/* Kill banner */}
-      {killedLastNight && (
-        <div className="flex-shrink-0 mx-3 mt-2 bg-black/30 border border-ember/40 rounded-lg px-3 py-1.5 text-sm text-ember/90 font-body text-center">
-          ☠️ <strong>{killedLastNight}</strong> was found dead this morning
+  switch (phase) {
+    case 'ROLE_ASSIGNMENT':
+      return (
+        <div className="flex-1 min-h-0 flex items-center justify-center">
+          <RoleCard />
         </div>
-      )}
-
-      {/* Mobile: player list toggle button */}
-      <div className="sm:hidden flex-shrink-0 px-3 pt-2">
-        <button
-          onClick={() => setShowPlayers((v) => !v)}
-          className="w-full flex items-center justify-between bg-parchment-light border border-wood/30 rounded-lg px-3 py-2 text-sm font-body text-wood-dark"
-        >
-          <span>👥 Players ({alive.length} alive)</span>
-          <span className="text-wood/50">{showPlayers ? '▲' : '▼'}</span>
-        </button>
-        {showPlayers && (
-          <div className="mt-2 max-h-48 overflow-y-auto bg-parchment border border-wood/20 rounded-lg p-2">
-            <InGamePlayerList />
-            <div className="mt-2">
-              <SkipVoteBar />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Content area */}
-      <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 p-3">
-        {/* Desktop sidebar: players + skip */}
-        <div className="hidden sm:flex sm:w-52 lg:w-60 flex-shrink-0 flex-col gap-3 overflow-y-auto">
-          <InGamePlayerList />
+      )
+    case 'NIGHT':
+      return (
+        <div className="flex-1 min-h-0 flex items-center justify-center px-2">
+          <NightPanel />
+        </div>
+      )
+    case 'DAWN':
+      return (
+        <div className="flex-1 min-h-0 flex items-center justify-center">
+          <DawnPanel />
+        </div>
+      )
+    case 'DAY_DISCUSSION':
+      return (
+        <div className="flex-1 min-h-0 flex flex-col gap-2 pt-2 pb-2 px-2">
           <SkipVoteBar />
-        </div>
-
-        {/* Chat — fills remaining space */}
-        <div className="flex-1 min-h-0">
-          <ChatPanel visibleChannels={['day']} />
-        </div>
-
-        {/* Ghost chat for dead players — right rail on desktop, strip below on mobile */}
-        {isDead && (
-          <div className="sm:w-56 lg:w-64 flex-shrink-0 h-[28vh] sm:h-auto min-h-0">
-            <ChatPanel visibleChannels={['ghost']} defaultChannel="ghost" />
+          <div className="flex-1 min-h-0">
+            <ChatPanel
+              visibleChannels={isDead ? ['ghost'] : ['day']}
+              defaultChannel={isDead ? 'ghost' : 'day'}
+            />
           </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ── Day Voting ────────────────────────────────────────────────────────────────
-// Mobile: header → vote grid (scrollable) → chat strip (fixed height)
-// Desktop: header → vote panel left | chat right
-
-function DayVotingView() {
-  return (
-    <div className="flex-1 min-h-0 flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-      <div className="flex items-center justify-between flex-shrink-0 border-b border-wood/20">
-        <PhaseHeader />
-        <DesktopMuteButton />
-      </div>
-
-      {/* Mobile: vote grid top, compact chat strip bottom — gap/padding tightened */}
-      <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-2 sm:gap-3 p-2 sm:p-3">
-        {/* Vote panel — scrollable on mobile if many players */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <VotePanel />
+          {isDead && (
+            <div className="h-[26vh] sm:h-40 flex-shrink-0">
+              <ChatPanel visibleChannels={['day']} />
+            </div>
+          )}
         </div>
-
-        {/* Chat — 26vh on mobile so the vote grid has breathing room; full column on desktop */}
-        <div className="h-[26vh] sm:h-auto sm:w-64 lg:w-72 flex-shrink-0 min-h-0">
-          <ChatPanel visibleChannels={['day']} />
+      )
+    case 'DAY_VOTING':
+      return (
+        <div className="flex-1 min-h-0 flex flex-col gap-2 pt-2 pb-2 px-2">
+          <div className="h-[28vh] sm:h-48 flex-shrink-0">
+            <ChatPanel visibleChannels={['day']} />
+          </div>
+          <p className="text-white/40 text-xs text-center flex-shrink-0">
+            Tap a VOTE button on a player seat to cast your vote
+          </p>
         </div>
-      </div>
-    </div>
-  )
+      )
+    case 'DAY_RESULT':
+      return (
+        <div className="flex-1 min-h-0 flex items-center justify-center">
+          <DayResultPanel />
+        </div>
+      )
+    default:
+      return null
+  }
 }
-
-// ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function Game() {
   const phase = useGameStore((s) => s.phase)
+  const variant = sceneVariant(phase)
+  const isNight = phase === 'NIGHT'
 
   return (
     <>
-      <RoleAtmosphere />
-      <MuteButton />
-      {(() => {
-        switch (phase) {
-          case 'ROLE_ASSIGNMENT': return <RoleCard />
-          case 'NIGHT':           return <NightPanel />
-          case 'DAWN':            return <DawnPanel />
-          case 'DAY_DISCUSSION':  return <DayDiscussionView />
-          case 'DAY_VOTING':      return <DayVotingView />
-          case 'DAY_RESULT':      return <DayResultPanel />
-          default:                return null
-        }
-      })()}
+      <SceneBackground variant={variant} showBats={isNight} />
+      <div
+        className="relative z-10 w-full flex flex-col"
+        style={{ minHeight: '100dvh' }}
+      >
+        <TopBar />
+        {isNight && (
+          <div className="flex-shrink-0 flex justify-center py-1">
+            <TeamStrengthBar />
+          </div>
+        )}
+        <div className="flex-1 min-h-0 flex">
+          <SeatColumn side="left" />
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <CenterContent />
+          </div>
+          <SeatColumn side="right" />
+        </div>
+      </div>
     </>
   )
 }
