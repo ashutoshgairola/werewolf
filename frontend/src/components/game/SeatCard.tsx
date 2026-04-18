@@ -2,13 +2,13 @@
 import type { Role } from '@/types/game'
 import { getPlayerColor } from '@/utils/playerColor'
 
-export type SeatAction = 'vote' | 'kill' | 'check' | 'protect' | null
+export type SeatAction = 'vote' | 'kill' | 'check' | 'protect' | 'cancel' | null
 
 interface SeatCardProps {
   playerId: string
   displayName: string
   role?: Role
-  seerResult?: 'wolf' | 'innocent' | null  // known from seer check
+  seerResult?: 'wolf' | 'innocent' | null
   isAlive: boolean
   isWolfAlly?: boolean
   action?: SeatAction
@@ -22,6 +22,7 @@ const ACTION_LABEL: Record<NonNullable<SeatAction>, string> = {
   kill:    'KILL',
   check:   'CHECK',
   protect: 'PROTECT',
+  cancel:  '✕ CANCEL',
 }
 
 const ACTION_STYLE: Record<NonNullable<SeatAction>, string> = {
@@ -29,6 +30,7 @@ const ACTION_STYLE: Record<NonNullable<SeatAction>, string> = {
   kill:    'bg-action-vote text-white',
   check:   'bg-action-check text-black',
   protect: 'bg-action-check text-black',
+  cancel:  'bg-white/15 text-white/70 border border-white/30',
 }
 
 function initials(name: string) {
@@ -60,7 +62,6 @@ export function SeatCard({
   const avatarOpacity = isAlive ? 1 : 0.35
   const showAction = action !== null && isAlive && !disabled
 
-  // Role badge text: prefer explicit role reveal, else seer result
   const roleBadge = role
     ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
     : seerResult === 'wolf'
@@ -73,11 +74,14 @@ export function SeatCard({
     ? 'from-red-500 to-red-700 text-white border-red-800'
     : 'from-yellow-300 to-yellow-600 text-black border-yellow-700'
 
+  // Show '✓ KILL' on the selected kill seat so the wolf sees clear confirmation
+  const buttonLabel = selected && action === 'kill' ? '✓ KILL' : ACTION_LABEL[action!]
+
   return (
-    <div className="flex flex-col items-center gap-1" style={{ width: 72 }}>
+    <div className="flex flex-col items-center gap-1 pt-2" style={{ width: 72 }}>
       <div className="relative">
         {roleBadge && (
-          <div className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10
+          <div className={`absolute -top-4 left-1/2 -translate-x-1/2 z-10
             bg-gradient-to-br ${roleBadgeColor}
             text-[8px] font-bold px-1.5 py-0.5 rounded-full
             whitespace-nowrap border shadow`}>
@@ -106,9 +110,9 @@ export function SeatCard({
           onClick={onAction}
           className={`text-[10px] font-black uppercase tracking-wide
             px-2.5 py-0.5 rounded-full transition-opacity active:scale-95 w-full text-center
-            ${ACTION_STYLE[action!]}`}
+            ${ACTION_STYLE[action!]} ${selected ? 'ring-1 ring-white/40' : ''}`}
         >
-          {ACTION_LABEL[action!]}
+          {buttonLabel}
         </button>
       ) : (
         <div

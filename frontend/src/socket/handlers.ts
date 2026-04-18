@@ -114,16 +114,31 @@ export function registerHandlers(socket: Socket): void {
   socket.on(
     'game:dawn',
     ({ killedPlayerId, role, doctorSaved }: { killedPlayerId: string | null; role?: Role; doctorSaved?: boolean }) => {
-      const { round, roles } = useGameStore.getState()
+      const { round, roles, players } = useGameStore.getState()
       useGameStore.getState().setDawnInfo({ killedPlayerId, role, doctorSaved })
       if (killedPlayerId) {
         useGameStore.getState().markPlayerDead(killedPlayerId, 'killed_night', round)
-        // Reveal the killed player's role so their card shows the icon
         if (role) {
           useGameStore.getState().setRoles({ ...roles, [killedPlayerId]: role })
         }
       }
       playSound(killedPlayerId ? 'death_toll' : 'dawn_bell')
+
+      // Inject system event into day chat so players see it live
+      const killedName = killedPlayerId
+        ? players.find(p => p.playerId === killedPlayerId)?.displayName ?? 'Someone'
+        : null
+      const eventText = killedName
+        ? `☠️ ${killedName} was found dead at dawn.${doctorSaved ? ' (The doctor saved someone else)' : ''}`
+        : '🌿 The village survived the night — nobody died.'
+      useGameStore.getState().addChatMessage({
+        messageId: crypto.randomUUID(),
+        senderId: null,
+        senderName: 'System',
+        text: eventText,
+        sentAt: Date.now(),
+        channel: 'day',
+      })
     }
   )
 
@@ -138,13 +153,24 @@ export function registerHandlers(socket: Socket): void {
   socket.on(
     'game:player_eliminated',
     ({ playerId, role }: { playerId: string; role: Role }) => {
-      const { round, roles } = useGameStore.getState()
+      const { round, roles, players } = useGameStore.getState()
       useGameStore.getState().markPlayerDead(playerId, 'lynched', round)
-      // Publicly reveal the lynched player's role (PRD §9: "role is publicly revealed")
       if (role) {
         useGameStore.getState().setRoles({ ...roles, [playerId]: role })
       }
       playSound('elimination')
+
+      // Inject system event into day chat
+      const name = players.find(p => p.playerId === playerId)?.displayName ?? 'Someone'
+      const roleLabel = role ? (role.charAt(0).toUpperCase() + role.slice(1)) : 'Unknown'
+      useGameStore.getState().addChatMessage({
+        messageId: crypto.randomUUID(),
+        senderId: null,
+        senderName: 'System',
+        text: `⚖️ ${name} was voted out. They were a ${roleLabel}.`,
+        sentAt: Date.now(),
+        channel: 'day',
+      })
     }
   )
 

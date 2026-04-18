@@ -6,11 +6,17 @@ export function TeamStrengthBar() {
   const roles = useGameStore((s) => s.roles)
   const alive = useGameStore((s) => s.alive)
 
-  const allWithRole = players.filter(p => roles[p.playerId])
-  const totalGood = allWithRole.filter(p => roles[p.playerId] !== 'werewolf').length
-  const totalEvil = allWithRole.filter(p => roles[p.playerId] === 'werewolf').length
-  const aliveGood = alive.filter(id => roles[id] && roles[id] !== 'werewolf').length
+  const totalPlayers = players.length
+  if (totalPlayers === 0) return null
+
+  // totalEvil = players whose role is visibly 'werewolf' (wolves see all pack members; villagers see 0)
+  // totalGood = everyone else — from a villager's POV all players appear as the good team
+  const allIds = players.map(p => p.playerId)
+  const totalEvil = allIds.filter(id => roles[id] === 'werewolf').length
+  const totalGood = totalPlayers - totalEvil
+
   const aliveEvil = alive.filter(id => roles[id] === 'werewolf').length
+  const aliveGood = alive.length - aliveEvil
 
   if (totalGood === 0 && totalEvil === 0) return null
 

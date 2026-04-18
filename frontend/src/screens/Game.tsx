@@ -53,6 +53,7 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
   const round = useGameStore((s) => s.round)
   const seerResults = useGameStore((s) => s.seerResults)
   const seerInspectedTargets = useGameStore((s) => s.seerInspectedTargets)
+  const dayVotes = useGameStore((s) => s.dayVotes)
   const roomPlayers = useRoomStore((s) => s.players)
   const seerCanActRound1 = useRoomStore((s) => s.settings.seerCanActRound1)
 
@@ -68,15 +69,25 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
 
   function handleAction(playerId: string, action: SeatAction) {
     if (!action) return
+    if (action === 'cancel') {
+      playSound('vote_thud')
+      socketEvents.dayVote(null)
+      return
+    }
     if (action === 'vote') { playSound('vote_thud'); socketEvents.dayVote(playerId); return }
-    if (action === 'kill') { playSound('wolf_action'); setOptimisticTarget(playerId); socketEvents.wolfVote(playerId) }
-    else if (action === 'check') { playSound('seer_action'); setOptimisticTarget(playerId); socketEvents.seerInspect(playerId) }
-    else if (action === 'protect') { playSound('doctor_action'); setOptimisticTarget(playerId); socketEvents.doctorProtect(playerId) }
+    if (action === 'kill') {
+      // Toggle off if clicking the already-selected kill target
+      if (optimisticTarget === playerId) { setOptimisticTarget(null); return }
+      playSound('wolf_action'); setOptimisticTarget(playerId); socketEvents.wolfVote(playerId)
+      return
+    }
+    if (action === 'check') { playSound('seer_action'); setOptimisticTarget(playerId); socketEvents.seerInspect(playerId) }
+    if (action === 'protect') { playSound('doctor_action'); setOptimisticTarget(playerId); socketEvents.doctorProtect(playerId) }
   }
 
   return (
     <div
-      className={`flex flex-col justify-center gap-3 py-4 flex-shrink-0 ${
+      className={`flex flex-col justify-center gap-5 py-4 flex-shrink-0 ${
         side === 'left' ? 'items-start pl-2 sm:pl-3' : 'items-end pr-2 sm:pr-3'
       }`}
       style={{ width: 80 }}
@@ -87,13 +98,11 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
         const role = roles[p.playerId] as Role | undefined
         const isWolfAlly = knownAllies.includes(p.playerId)
 
-        // Show role badge: own role, dead player's revealed role, wolf seeing ally at night
         const showRole =
           isMe ||
           !isPlayerAlive ||
           (phase === 'NIGHT' && myRole === 'werewolf' && isWolfAlly)
 
-        // Seer: disable already-inspected targets; show result badge on their seat
         const alreadyInspected = seerInspectedTargets.includes(p.playerId)
         const seerResult = myRole === 'seer'
           ? seerResults.find((r) => r.targetId === p.playerId)
@@ -101,13 +110,20 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
 
         const action = seatAction(phase, myRole, isMe, amAlive, isPlayerAlive, round, seerCanActRound1)
 
-        // Disabled when: is me, I'm dead, seer already inspected, or optimistic action already sent this night
+        // Vote cancel state (server-confirmed via dayVotes)
+        const myVoteTarget = dayVotes[myId]
+        const iVotedForThis = myVoteTarget === p.playerId
+        const dayVoteLocked = phase === 'DAY_VOTING' && !!myVoteTarget && !iVotedForThis
+        const effectiveAction: SeatAction =
+          phase === 'DAY_VOTING' && iVotedForThis ? 'cancel' : action
+
         const nightActionDone = phase === 'NIGHT' && optimisticTarget !== null
         const isDisabled =
           isMe ||
           !amAlive ||
           (myRole === 'seer' && phase === 'NIGHT' && alreadyInspected) ||
-          (nightActionDone && p.playerId !== optimisticTarget)
+          (nightActionDone && p.playerId !== optimisticTarget) ||
+          dayVoteLocked
 
         const isSelected = phase === 'NIGHT' && optimisticTarget === p.playerId
 
@@ -120,10 +136,10 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
             seerResult={seerResult ? (seerResult.isWolf ? 'wolf' : 'innocent') : null}
             isAlive={isPlayerAlive}
             isWolfAlly={phase === 'NIGHT' && myRole === 'werewolf' && isWolfAlly}
-            action={action}
+            action={effectiveAction}
             disabled={isDisabled}
             selected={isSelected}
-            onAction={() => handleAction(p.playerId, action)}
+            onAction={() => handleAction(p.playerId, effectiveAction)}
           />
         )
       })}
