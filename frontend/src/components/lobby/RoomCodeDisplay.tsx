@@ -23,10 +23,10 @@ export function RoomCodeDisplay({ roomCode }: RoomCodeDisplayProps) {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-wood text-sm font-body">Room Code</p>
+      <p className="text-white/60 text-sm font-sans">Room Code</p>
       <button
         onClick={handleCopyCode}
-        className="bg-parchment border-2 border-wood rounded-lg px-6 py-2 font-mono text-3xl font-bold tracking-widest text-wood-dark hover:bg-parchment-dark transition-colors"
+        className="bg-navy border-2 border-cyan-game/20 rounded-lg px-6 py-2 font-mono text-3xl font-bold tracking-widest text-white hover:bg-navy-surface transition-colors"
         title="Click to copy code"
       >
         {roomCode}
@@ -37,7 +37,7 @@ export function RoomCodeDisplay({ roomCode }: RoomCodeDisplayProps) {
         </span>
         <button
           onClick={handleCopyLink}
-          className="text-xs text-wood hover:text-wood-dark underline underline-offset-2 transition-colors"
+          className="text-xs text-white/60 hover:text-white underline underline-offset-2 transition-colors"
           title="Copy invite link"
         >
           {copiedLink ? '✓ Link copied!' : '🔗 Copy invite link'}
