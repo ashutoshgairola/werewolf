@@ -33,7 +33,7 @@ export function NightPanel() {
           </div>
           {/* Pack chat — fixed height strip on mobile, right column on desktop */}
           <div className="h-[40vh] flex-shrink-0 sm:h-auto sm:w-64 lg:w-72 sm:min-h-0 border-t border-white/10 sm:border-t-0">
-            <ChatPanel visibleChannels={['wolf']} defaultChannel="wolf" />
+            <ChatPanel sendChannel="wolf" canSend={true} />
           </div>
         </div>
       </div>

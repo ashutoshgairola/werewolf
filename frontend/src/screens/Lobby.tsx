@@ -84,7 +84,7 @@ export default function Lobby() {
       {/* Mobile: fixed 44vh strip at bottom so it's usable on any phone height */}
       {/* Desktop (lg): full-height right column */}
       <div className="h-[44vh] lg:h-auto lg:w-80 lg:border-l border-t lg:border-t-0 border-cyan-game/15 flex-shrink-0 lg:flex-shrink lg:flex-1 min-h-0">
-        <ChatPanel visibleChannels={['day']} defaultChannel="day" />
+        <ChatPanel sendChannel="day" canSend={true} />
       </div>
     </div>
   )

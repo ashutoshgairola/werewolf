@@ -1,30 +1,78 @@
 import { useState, useRef, useEffect } from 'react'
 import { useGameStore } from '@/stores/gameStore'
 import { useAuthStore } from '@/stores/authStore'
+import { useRoomStore } from '@/stores/roomStore'
 import { socketEvents } from '@/socket/events'
-import { ChatMessage } from './ChatMessage'
-import type { ChatChannel } from '@/types/game'
+import { getPlayerColor } from '@/utils/playerColor'
+import type { ChatMessage } from '@/types/game'
 
 interface ChatPanelProps {
-  /** Force a specific tab to be visible (e.g. only 'day' in lobby) */
-  defaultChannel?: ChatChannel
-  /** Restrict visible tabs (e.g. ['day'] for lobby) */
-  visibleChannels?: ChatChannel[]
+  // Which channel to send to ('day' | 'wolf')
+  sendChannel?: 'day' | 'wolf'
+  // Whether the current user can send
+  canSend?: boolean
 }
 
-const CHANNEL_LABELS: Record<ChatChannel, string> = {
-  day: '☀️ Town',
-  wolf: '🐺 Pack',
-  ghost: '👻 Spirits',
-  system: '📜 System',  // kept for type-safety but never shown as a tab
+function SystemBubble({ text }: { text: string }) {
+  return (
+    <div className="px-4 py-0.5 flex justify-center">
+      <span className="text-xs italic text-white/45 text-center">{text}</span>
+    </div>
+  )
 }
 
-export function ChatPanel({ defaultChannel = 'day', visibleChannels }: ChatPanelProps) {
-  const [activeChannel, setActiveChannel] = useState<ChatChannel>(defaultChannel)
+function MessageBubble({ message, isMe }: { message: ChatMessage; isMe: boolean }) {
+  const roomPlayers = useRoomStore((s) => s.players)
+  const senderId = message.senderId ?? ''
+  const color = getPlayerColor(senderId)
+
+  // Find initials
+  const player = roomPlayers.find((p) => p.playerId === senderId)
+  const name = player?.displayName ?? message.senderName ?? '?'
+  const inits = name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+
+  if (isMe) {
+    return (
+      <div className="flex flex-row-reverse items-end gap-1.5 px-3 py-0.5">
+        <div
+          className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+          style={{ background: `${color}33`, color, border: `1.5px solid ${color}` }}
+        >
+          {inits}
+        </div>
+        <div
+          className="max-w-[70%] rounded-2xl rounded-br-sm px-3 py-1.5 text-sm text-white break-words"
+          style={{ background: `${color}55`, border: `1px solid ${color}66` }}
+        >
+          {message.text}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-end gap-1.5 px-3 py-0.5">
+      <div
+        className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+        style={{ background: `${color}33`, color, border: `1.5px solid ${color}` }}
+      >
+        {inits}
+      </div>
+      <div className="max-w-[70%] flex flex-col gap-0.5">
+        <span className="text-[10px] pl-1" style={{ color }}>{name}</span>
+        <div className="bg-navy-surface/80 border border-white/10 rounded-2xl rounded-bl-sm px-3 py-1.5 text-sm text-white break-words">
+          {message.text}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function ChatPanel({ sendChannel = 'day', canSend = true }: ChatPanelProps) {
   const [text, setText] = useState('')
+  const [rateLimitMsg, setRateLimitMsg] = useState<string | null>(null)
   const [atBottom, setAtBottom] = useState(true)
   const [newBadge, setNewBadge] = useState(false)
-  const [rateLimitMsg, setRateLimitMsg] = useState<string | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -39,22 +87,19 @@ export function ChatPanel({ defaultChannel = 'day', visibleChannels }: ChatPanel
   }, [])
 
   const chatLogs = useGameStore((s) => s.chatLogs)
-  const role = useGameStore((s) => s.role)
   const alive = useGameStore((s) => s.alive)
-  const myId = useAuthStore((s) => s.playerId)
+  const myId = useAuthStore((s) => s.playerId) ?? ''
+  const isDead = !alive.includes(myId)
 
-  const isDead = !alive.includes(myId ?? '')
+  // Merge day + system messages, sorted by order they were added (they arrive in order)
+  const dayMessages = chatLogs[sendChannel] ?? []
+  const systemMessages = chatLogs.system ?? []
 
-  const tabs: ChatChannel[] = visibleChannels ?? (() => {
-    const t: ChatChannel[] = ['day']
-    if (role === 'werewolf') t.push('wolf')
-    if (isDead) t.push('ghost')
-    return t
-  })()
+  // Interleave: system messages that have a messageId in order with day messages
+  // Since we can't rely on timestamps, just concat and let server ordering handle it
+  // The server sends system messages on 'day' channel in the new design
+  const messages = dayMessages
 
-  const messages = chatLogs[activeChannel] ?? []
-
-  // Auto-scroll
   useEffect(() => {
     const el = listRef.current
     if (!el) return
@@ -63,7 +108,7 @@ export function ChatPanel({ defaultChannel = 'day', visibleChannels }: ChatPanel
     } else {
       setNewBadge(true)
     }
-  }, [messages.length])
+  }, [messages.length, systemMessages.length])
 
   function handleScroll() {
     const el = listRef.current
@@ -91,94 +136,76 @@ export function ChatPanel({ defaultChannel = 'day', visibleChannels }: ChatPanel
   function send() {
     const trimmed = text.trim()
     if (!trimmed) return
-    socketEvents.sendChat(activeChannel, trimmed)
+    socketEvents.sendChat(sendChannel, trimmed)
     setText('')
     inputRef.current?.focus()
   }
 
-  const canSend = activeChannel === 'day' || activeChannel === 'wolf'
-    ? !isDead
-    : activeChannel === 'ghost'
-    ? isDead
-    : false
+  const actualCanSend = canSend && !isDead
 
   return (
-    <div className="relative flex flex-col h-full bg-navy-mid border border-cyan-game/20 rounded-xl overflow-hidden">
-      {/* Tabs */}
-      <div className="flex border-b border-cyan-game/15 bg-navy-surface overflow-x-auto">
-        {tabs.map((ch) => (
-          <button
-            key={ch}
-            onClick={() => { setActiveChannel(ch); setNewBadge(false) }}
-            className={[
-              'px-3 py-2 text-xs font-sans whitespace-nowrap flex-shrink-0 border-b-2 transition-colors',
-              activeChannel === ch
-                ? 'border-candle text-white/80 font-semibold'
-                : 'border-transparent text-white/50 hover:text-white/60',
-            ].join(' ')}
-          >
-            {CHANNEL_LABELS[ch]}
-          </button>
-        ))}
-      </div>
-
-      {/* Messages */}
+    <div className="relative flex flex-col h-full">
+      {/* Messages feed — no background box */}
       <div
         ref={listRef}
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto py-2 space-y-0.5 min-h-0"
       >
-        {messages.length === 0 && (
-          <p className="text-center text-white/40 text-xs font-sans py-8 italic">No messages yet</p>
+        {messages.length === 0 && systemMessages.length === 0 && (
+          <p className="text-center text-white/30 text-xs py-6 italic">No messages yet</p>
         )}
-        {messages.map((msg) => (
-          <ChatMessage key={msg.messageId} message={msg} />
+        {/* System messages shown above */}
+        {systemMessages.map((msg) => (
+          <SystemBubble key={msg.messageId} text={msg.text} />
         ))}
+        {messages.map((msg) => {
+          if (msg.senderId === null) {
+            return <SystemBubble key={msg.messageId} text={msg.text} />
+          }
+          return (
+            <MessageBubble
+              key={msg.messageId}
+              message={msg}
+              isMe={msg.senderId === myId}
+            />
+          )
+        })}
       </div>
 
-      {/* New message badge */}
       {newBadge && !atBottom && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-16 left-1/2 -translate-x-1/2 bg-candle text-white text-xs rounded-full px-3 py-1 shadow"
+          className="absolute bottom-16 left-1/2 -translate-x-1/2 bg-cyan-game/90 text-white text-xs rounded-full px-3 py-1 shadow z-10"
         >
           ↓ New message
         </button>
       )}
 
-      {/* Rate limit toast */}
       {rateLimitMsg && (
-        <div className="px-3 py-1.5 bg-action-vote/10 border-t border-action-vote/30 text-xs text-action-vote font-sans text-center">
+        <div className="px-3 py-1.5 bg-action-vote/10 border-t border-action-vote/30 text-xs text-action-vote text-center">
           ⚠ {rateLimitMsg}
         </div>
       )}
 
-      {/* Input */}
-      {canSend && (
-        <div className="border-t border-cyan-game/15 p-2 flex gap-2">
+      {actualCanSend && (
+        <div className="flex-shrink-0 px-3 pb-2 pt-1 flex gap-2">
           <textarea
             ref={inputRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message… (Enter to send)"
+            placeholder="Type a message…"
             rows={1}
-            className="flex-1 resize-none bg-navy-mid border border-cyan-game/20 rounded-lg px-3 py-2 text-sm font-sans text-white focus:outline-none focus:ring-1 focus:ring-candle"
+            className="flex-1 resize-none bg-navy-light/60 border border-white/15 rounded-2xl px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-cyan-game/50"
             style={{ maxHeight: '80px', overflowY: 'auto' }}
           />
           <button
             onClick={send}
             disabled={!text.trim()}
-            className="px-3 py-2 bg-candle rounded-lg text-sm font-sans text-white disabled:opacity-40"
+            className="px-3 py-2 bg-cyan-game/80 rounded-2xl text-sm text-white disabled:opacity-30"
           >
             ↵
           </button>
-        </div>
-      )}
-
-      {!canSend && (
-        <div className="border-t border-cyan-game/15 p-2 text-center text-xs text-white/40 font-sans italic">
-          You cannot send messages in this channel
         </div>
       )}
     </div>
