@@ -17,6 +17,7 @@ export function DayResultPanel() {
   const lynchedId = useGameStore((s) => s.lynchedPlayerId)
   const dayVotes = useGameStore((s) => s.dayVotes)
   const roles = useGameStore((s) => s.roles)
+  const alive = useGameStore((s) => s.alive)
   const players = useRoomStore((s) => s.players)
   const phaseEndsAt = useGameStore((s) => s.phaseEndsAt)
   usePhaseAutoAdvance(phaseEndsAt)
@@ -36,7 +37,7 @@ export function DayResultPanel() {
     .map(([voterId]) => voterId)
 
   const abstainers = players
-    .filter(p => !dayVotes[p.playerId] && p.playerId !== lynchedId)
+    .filter(p => alive.includes(p.playerId) && !dayVotes[p.playerId] && p.playerId !== lynchedId)
     .map(p => p.playerId)
 
   return (

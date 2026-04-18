@@ -29,12 +29,14 @@ function seatAction(
   isMe: boolean,
   amAlive: boolean,
   targetIsAlive: boolean,
+  round: number,
+  seerCanActRound1: boolean,
 ): SeatAction {
   if (isMe || !amAlive || !targetIsAlive) return null
   if (phase === 'DAY_VOTING') return 'vote'
   if (phase === 'NIGHT') {
     if (myRole === 'werewolf') return 'kill'
-    if (myRole === 'seer') return 'check'
+    if (myRole === 'seer' && !(round === 1 && !seerCanActRound1)) return 'check'
     if (myRole === 'doctor') return 'protect'
   }
   return null
@@ -47,7 +49,10 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
   const alive = useGameStore((s) => s.alive)
   const roles = useGameStore((s) => s.roles)
   const knownAllies = useGameStore((s) => s.knownAllies)
+  const round = useGameStore((s) => s.round)
+  const doctorLastProtected = useGameStore((s) => s.doctorLastProtected)
   const roomPlayers = useRoomStore((s) => s.players)
+  const seerCanActRound1 = useRoomStore((s) => s.settings.seerCanActRound1)
 
   const amAlive = alive.includes(myId)
   const half = Math.ceil(roomPlayers.length / 2)
@@ -57,7 +62,10 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
 
   function handleAction(playerId: string, action: SeatAction) {
     if (!action) return
-    playSound('wolf_action')
+    if (action === 'kill') playSound('wolf_action')
+    else if (action === 'check') playSound('seer_action')
+    else if (action === 'protect') playSound('doctor_action')
+    else playSound('wolf_action')
     if (action === 'vote') socketEvents.dayVote(playerId)
     if (action === 'kill') socketEvents.wolfVote(playerId)
     if (action === 'check') socketEvents.seerInspect(playerId)
@@ -77,7 +85,7 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
         const isPlayerAlive = alive.includes(p.playerId)
         const role = roles[p.playerId] as Role | undefined
         const isWolfAlly = knownAllies.includes(p.playerId)
-        const action = seatAction(phase, myRole, isMe, amAlive, isPlayerAlive)
+        const action = seatAction(phase, myRole, isMe, amAlive, isPlayerAlive, round, seerCanActRound1)
 
         const showRole =
           isMe ||
@@ -93,7 +101,7 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
             isAlive={isPlayerAlive}
             isWolfAlly={phase === 'NIGHT' && myRole === 'werewolf' && isWolfAlly}
             action={action}
-            disabled={isMe || !amAlive}
+            disabled={isMe || !amAlive || (myRole === 'doctor' && phase === 'NIGHT' && p.playerId === doctorLastProtected)}
             onAction={() => handleAction(p.playerId, action)}
           />
         )
