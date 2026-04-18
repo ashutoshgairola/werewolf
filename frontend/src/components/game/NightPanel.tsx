@@ -1,6 +1,5 @@
 import type { Role } from '@/types/game'
 import { useGameStore } from '@/stores/gameStore'
-import { PhaseHeader } from './PhaseHeader'
 import { WolfNightPanel } from './WolfNightPanel'
 import { SeerNightPanel } from './SeerNightPanel'
 import { DoctorNightPanel } from './DoctorNightPanel'
@@ -25,7 +24,6 @@ export function NightPanel() {
       // Wolf: role actions left | pack chat right
       // Mobile: stacked — actions on top, pack chat strip below
       <div className="flex-1 min-h-0 flex flex-col bg-moon" style={{ position: 'relative', zIndex: 1 }}>
-        <PhaseHeader />
         {/* Mobile: role content scrolls naturally above fixed chat strip */}
         {/* Desktop: side-by-side columns */}
         <div className="flex-1 min-h-0 flex flex-col sm:flex-row sm:gap-3 sm:p-3 overflow-hidden">
@@ -45,7 +43,6 @@ export function NightPanel() {
   return (
     // Non-wolf: centered content, no chat
     <div className="flex-1 min-h-0 flex flex-col bg-moon" style={{ position: 'relative', zIndex: 1 }}>
-      <PhaseHeader />
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-6">
           <NightRoleContent role={role} />
