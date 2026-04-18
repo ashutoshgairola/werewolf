@@ -46,6 +46,24 @@ export default {
           border: 'var(--theme-border)',
           glow: 'var(--theme-glow)',
         },
+        navy: {
+          DEFAULT: '#0a1428',
+          mid: '#0e2060',
+          light: '#1a3a7a',
+          surface: '#0d1838',
+        },
+        'cyan-game': '#3ec1f3',
+        'cyan-glow': '#1a9fd4',
+        seat: {
+          num: '#e8a020',
+          border: '#1a5adf',
+          ally: '#c0392b',
+          checked: '#4cd964',
+        },
+        action: {
+          vote: '#ff3b6e',
+          check: '#4cd964',
+        },
       },
       fontFamily: {
         tavern: ['"Cinzel"', '"Palatino Linotype"', 'Georgia', 'serif'],
@@ -95,6 +113,15 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        'bat-fly': {
+          '0%': { transform: 'translateX(-10px) translateY(0px)' },
+          '50%': { transform: 'translateX(5px) translateY(-8px)' },
+          '100%': { transform: 'translateX(20px) translateY(0px)' },
+        },
+        'moon-glow': {
+          '0%, 100%': { boxShadow: '0 0 30px rgba(180,210,255,0.4)' },
+          '50%': { boxShadow: '0 0 50px rgba(180,210,255,0.65)' },
+        },
       },
       animation: {
         'card-flip': 'card-flip 0.7s ease-in-out forwards',
@@ -107,6 +134,8 @@ export default {
         'particle-float': 'particle-float 4s ease-in-out infinite',
         'particle-twinkle': 'particle-twinkle 3s ease-in-out infinite',
         'flavour-slide-up': 'flavour-slide-up 0.6s ease-out forwards',
+        'bat-fly': 'bat-fly 3s ease-in-out infinite',
+        'moon-glow': 'moon-glow 4s ease-in-out infinite',
       },
     },
   },

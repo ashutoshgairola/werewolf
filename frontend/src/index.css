@@ -11,19 +11,13 @@
   }
 
   body {
-    @apply bg-parchment text-ink;
+    background: #060d1f;
+    color: #ffffff;
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-parchment-dark;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-wood-light rounded-full;
-  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a1428; }
+  ::-webkit-scrollbar-thumb { background: #1a3a7a; border-radius: 9999px; }
 }
 
 @keyframes dawn-rise {
@@ -41,32 +35,19 @@
 }
 
 @layer utilities {
-  /* Card flip perspective container */
-  .perspective {
-    perspective: 1000px;
-  }
-  .preserve-3d {
-    transform-style: preserve-3d;
-  }
-  .backface-hidden {
-    backface-visibility: hidden;
-  }
-  .rotate-y-180 {
-    transform: rotateY(180deg);
-  }
+  .perspective    { perspective: 1000px; }
+  .preserve-3d    { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
+  .rotate-y-180   { transform: rotateY(180deg); }
 
-  /* Night phase gradient */
-  .bg-night {
-    background: linear-gradient(180deg, #0f0c29 0%, #1E1B4B 50%, #24243e 100%);
+  /* Scene backgrounds — applied to SceneBackground gradient layer */
+  .bg-scene-night {
+    background: radial-gradient(ellipse at 50% -10%, #1a2a5a 0%, #0a1428 45%, #060d1f 100%);
   }
-
-  /* Dawn gradient */
-  .bg-dawn {
-    background: linear-gradient(180deg, #1E1B4B 0%, #7c2d12 40%, #f59e0b 100%);
+  .bg-scene-day {
+    background: radial-gradient(ellipse at 50% -10%, #1e3a6e 0%, #0d2045 45%, #080e28 100%);
   }
-
-  /* Day gradient */
-  .bg-day {
-    background: linear-gradient(180deg, #bfdbfe 0%, #eff6ff 100%);
+  .bg-scene-wolf {
+    background: radial-gradient(ellipse at 50% 20%, #3a0808 0%, #1a0404 45%, #060005 100%);
   }
 }
