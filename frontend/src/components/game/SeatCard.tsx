@@ -51,10 +51,14 @@ export function SeatCard({
 }: SeatCardProps) {
   const color = getPlayerColor(playerId)
 
+  const isVoteCancel = action === 'cancel'
+
   const ringColor = !isAlive
     ? 'rgba(255,255,255,0.15)'
     : isWolfAlly
     ? '#ef4444'
+    : isVoteCancel
+    ? '#facc15'
     : selected
     ? '#ffffff'
     : color
@@ -94,11 +98,11 @@ export function SeatCard({
         <div
           className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden transition-all duration-300 flex-shrink-0"
           style={{
-            background: selected ? `${color}44` : `${color}22`,
-            border: `${selected ? 3 : 2.5}px solid ${ringColor}`,
+            background: (isVoteCancel || selected) ? `${color}44` : `${color}22`,
+            border: `${(isVoteCancel || selected) ? 3 : 2.5}px solid ${ringColor}`,
             opacity: avatarOpacity,
             filter: isAlive ? 'none' : 'grayscale(100%)',
-            boxShadow: selected ? `0 0 12px 3px ${color}88` : undefined,
+            boxShadow: isVoteCancel ? `0 0 14px 4px #facc1566` : selected ? `0 0 12px 3px ${color}88` : undefined,
           }}
         >
           <span className="font-bold text-base select-none" style={{ color }}>

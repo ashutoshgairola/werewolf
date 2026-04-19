@@ -1,10 +1,9 @@
 import { useGameStore } from '@/stores/gameStore'
-import { useRoomStore } from '@/stores/roomStore'
 import { usePhaseAutoAdvance } from '@/hooks/usePhaseAutoAdvance'
 
 export function DawnPanel() {
   const dawnInfo = useGameStore((s) => s.dawnInfo)
-  const players = useRoomStore((s) => s.players)
+  const players = useGameStore((s) => s.players)
   const phaseEndsAt = useGameStore((s) => s.phaseEndsAt)
   usePhaseAutoAdvance(phaseEndsAt)
 

@@ -32,18 +32,26 @@ function seatAction(
   targetIsAlive: boolean,
   round: number,
   seerCanActRound1: boolean,
+  wolvesCanKillRound1: boolean,
+  isWolfAlly: boolean,
 ): SeatAction {
   if (isMe || !amAlive || !targetIsAlive) return null
   if (phase === 'DAY_VOTING') return 'vote'
   if (phase === 'NIGHT') {
-    if (myRole === 'werewolf') return 'kill'
+    if (myRole === 'werewolf' && !isWolfAlly && !(round === 1 && !wolvesCanKillRound1)) return 'kill'
     if (myRole === 'seer' && !(round === 1 && !seerCanActRound1)) return 'check'
     if (myRole === 'doctor') return 'protect'
   }
   return null
 }
 
-function SeatColumn({ side }: { side: 'left' | 'right' }) {
+interface SeatColumnProps {
+  side: 'left' | 'right'
+  optimisticTarget: string | null
+  setOptimisticTarget: (id: string | null) => void
+}
+
+function SeatColumn({ side, optimisticTarget, setOptimisticTarget }: SeatColumnProps) {
   const phase = useGameStore((s) => s.phase)
   const myRole = useGameStore((s) => s.role)
   const myId = useAuthStore((s) => s.playerId)!
@@ -56,10 +64,7 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
   const dayVotes = useGameStore((s) => s.dayVotes)
   const roomPlayers = useRoomStore((s) => s.players)
   const seerCanActRound1 = useRoomStore((s) => s.settings.seerCanActRound1)
-
-  // Optimistic night action: track which player the current user acted on this night
-  const [optimisticTarget, setOptimisticTarget] = useState<string | null>(null)
-  useEffect(() => { setOptimisticTarget(null) }, [phase, round])
+  const wolvesCanKillRound1 = useRoomStore((s) => s.settings.wolvesCanKillRound1)
 
   const amAlive = alive.includes(myId)
   const half = Math.ceil(roomPlayers.length / 2)
@@ -71,12 +76,17 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
     if (!action) return
     if (action === 'cancel') {
       playSound('vote_thud')
+      useGameStore.getState().setDayVote(myId, null)
       socketEvents.dayVote(null)
       return
     }
-    if (action === 'vote') { playSound('vote_thud'); socketEvents.dayVote(playerId); return }
+    if (action === 'vote') {
+      playSound('vote_thud')
+      useGameStore.getState().setDayVote(myId, playerId)
+      socketEvents.dayVote(playerId)
+      return
+    }
     if (action === 'kill') {
-      // Toggle off if clicking the already-selected kill target
       if (optimisticTarget === playerId) { setOptimisticTarget(null); return }
       playSound('wolf_action'); setOptimisticTarget(playerId); socketEvents.wolfVote(playerId)
       return
@@ -112,24 +122,31 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
           ? seerResults.find((r) => r.targetId === p.playerId)
           : undefined
 
-        const action = seatAction(phase, myRole, isMe, amAlive, isPlayerAlive, round, seerCanActRound1)
+        const baseAction = seatAction(phase, myRole, isMe, amAlive, isPlayerAlive, round, seerCanActRound1, wolvesCanKillRound1, isWolfAlly)
 
-        // Vote cancel state (server-confirmed via dayVotes)
+        // Vote state (optimistic via local dayVotes write)
         const myVoteTarget = dayVotes[myId]
         const iVotedForThis = myVoteTarget === p.playerId
-        const dayVoteLocked = phase === 'DAY_VOTING' && !!myVoteTarget && !iVotedForThis
-        const effectiveAction: SeatAction =
-          phase === 'DAY_VOTING' && iVotedForThis ? 'cancel' : action
 
+        // Night action state
         const nightActionDone = phase === 'NIGHT' && optimisticTarget !== null
-        const isDisabled =
-          isMe ||
-          !amAlive ||
-          (myRole === 'seer' && phase === 'NIGHT' && alreadyInspected) ||
-          (nightActionDone && p.playerId !== optimisticTarget) ||
-          dayVoteLocked
+        const isNightSelected = phase === 'NIGHT' && optimisticTarget === p.playerId
+        const isVoteSelected = phase === 'DAY_VOTING' && iVotedForThis
 
-        const isSelected = phase === 'NIGHT' && optimisticTarget === p.playerId
+        // When any target is selected, hide actions on all other actionable seats
+        const hideAction =
+          !isMe && amAlive && isPlayerAlive && (
+            (nightActionDone && !isNightSelected) ||
+            (phase === 'DAY_VOTING' && !!myVoteTarget && !iVotedForThis)
+          )
+
+        const effectiveAction: SeatAction =
+          hideAction ? null :
+          isVoteSelected ? 'cancel' :
+          (myRole === 'seer' && phase === 'NIGHT' && alreadyInspected) ? null :
+          baseAction
+
+        const isSelected = isNightSelected || isVoteSelected
 
         return (
           <SeatCard
@@ -141,7 +158,7 @@ function SeatColumn({ side }: { side: 'left' | 'right' }) {
             isAlive={isPlayerAlive}
             isWolfAlly={phase === 'NIGHT' && myRole === 'werewolf' && isWolfAlly}
             action={effectiveAction}
-            disabled={isDisabled}
+            disabled={isMe || !amAlive}
             selected={isSelected}
             onAction={() => handleAction(p.playerId, effectiveAction)}
           />
@@ -212,8 +229,12 @@ function CenterContent() {
 
 export default function Game() {
   const phase = useGameStore((s) => s.phase)
+  const round = useGameStore((s) => s.round)
   const variant = sceneVariant(phase)
   const isNight = phase === 'NIGHT'
+
+  const [optimisticTarget, setOptimisticTarget] = useState<string | null>(null)
+  useEffect(() => { setOptimisticTarget(null) }, [phase, round])
 
   return (
     <>
@@ -229,11 +250,11 @@ export default function Game() {
           </div>
         )}
         <div className="flex-1 min-h-0 flex">
-          <SeatColumn side="left" />
+          <SeatColumn side="left" optimisticTarget={optimisticTarget} setOptimisticTarget={setOptimisticTarget} />
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <CenterContent />
           </div>
-          <SeatColumn side="right" />
+          <SeatColumn side="right" optimisticTarget={optimisticTarget} setOptimisticTarget={setOptimisticTarget} />
         </div>
       </div>
     </>

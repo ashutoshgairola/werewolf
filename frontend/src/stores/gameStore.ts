@@ -59,7 +59,8 @@ interface GameStoreActions {
   setAlive: (alive: string[]) => void
   applySnapshot: (snapshot: GameSnapshot) => void
   addChatMessage: (message: ChatMessage) => void
-  setDayVoteTallies: (tallies: Record<string, number>) => void  // incoming tally from server
+  setDayVote: (voterId: string, targetId: string | null) => void  // optimistic local vote
+  setDayVoteTallies: (tallies: Record<string, number>) => void   // incoming tally from server
   setWolfTally: (tally: Record<string, number>) => void
   setSkipVote: (skipCount: number, aliveCount: number) => void
   addDaySkipVote: (playerId: string) => void
@@ -159,15 +160,43 @@ export const useGameStore = create<GameStoreState & GameStoreActions>()((set) =>
       wolfTally: snapshot.wolfTally ?? {},
       chatLogs: snapshot.chatLogs,
       winner: snapshot.winner,
+      // Derive lynchedPlayerId from dayVotes when reconnecting during DAY_RESULT
+      lynchedPlayerId: snapshot.phase === 'DAY_RESULT'
+        ? (() => {
+            const counts: Record<string, number> = {}
+            for (const targetId of Object.values(snapshot.dayVotes)) {
+              counts[targetId] = (counts[targetId] ?? 0) + 1
+            }
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1])
+            return sorted.length > 0 && (sorted.length === 1 || sorted[0][1] > sorted[1][1])
+              ? sorted[0][0]
+              : null
+          })()
+        : null,
     }),
 
   addChatMessage: (message) =>
-    set((state) => ({
-      chatLogs: {
-        ...state.chatLogs,
-        [message.channel]: [...state.chatLogs[message.channel as ChatChannel], message],
-      },
-    })),
+    set((state) => {
+      const channel = message.channel as ChatChannel
+      // Deduplicate by messageId to prevent double-injection on reconnect
+      if (state.chatLogs[channel].some((m) => m.messageId === message.messageId)) {
+        return state
+      }
+      return {
+        chatLogs: {
+          ...state.chatLogs,
+          [channel]: [...state.chatLogs[channel], message],
+        },
+      }
+    }),
+
+  setDayVote: (voterId, targetId) =>
+    set((state) => {
+      const next = { ...state.dayVotes }
+      if (targetId === null) delete next[voterId]
+      else next[voterId] = targetId
+      return { dayVotes: next }
+    }),
 
   // Server sends tallies as { targetId: count }
   setDayVoteTallies: (tallies) => set({ dayVoteTallies: tallies }),

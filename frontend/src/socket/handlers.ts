@@ -96,6 +96,14 @@ export function registerHandlers(socket: Socket): void {
     }
   })
 
+  const PHASE_SYSTEM_TEXT: Record<string, (round: number) => string> = {
+    NIGHT:          (r) => `🌑 Night falls — Round ${r} begins.`,
+    DAWN:           ()  => '🌅 Dawn breaks…',
+    DAY_DISCUSSION: ()  => '☀️ Day begins — discuss and find the wolves.',
+    DAY_VOTING:     ()  => '⚖️ Voting has begun — cast your vote.',
+    DAY_RESULT:     ()  => '📜 The votes are counted.',
+  }
+
   socket.on(
     'game:phase_change',
     ({ phase, endsAt, round }: { phase: string; endsAt: number | null; round: number }) => {
@@ -103,6 +111,18 @@ export function registerHandlers(socket: Socket): void {
       useRoomStore.setState({ status: 'IN_GAME' })
       const soundKey = PHASE_SOUNDS[phase]
       if (soundKey) playSound(soundKey)
+
+      const textFn = PHASE_SYSTEM_TEXT[phase]
+      if (textFn) {
+        useGameStore.getState().addChatMessage({
+          messageId: `phase-${phase}-${round}`,
+          senderId: null,
+          senderName: 'System',
+          text: textFn(round),
+          sentAt: Date.now(),
+          channel: 'day',
+        })
+      }
     }
   )
 
@@ -130,9 +150,11 @@ export function registerHandlers(socket: Socket): void {
         : null
       const eventText = killedName
         ? `☠️ ${killedName} was found dead at dawn.${doctorSaved ? ' (The doctor saved someone else)' : ''}`
-        : '🌿 The village survived the night — nobody died.'
+        : doctorSaved
+          ? '💉 The doctor saved someone — nobody died tonight.'
+          : '🌿 The village survived the night — nobody died.'
       useGameStore.getState().addChatMessage({
-        messageId: crypto.randomUUID(),
+        messageId: `dawn-${round}`,
         senderId: null,
         senderName: 'System',
         text: eventText,
@@ -164,7 +186,7 @@ export function registerHandlers(socket: Socket): void {
       const name = players.find(p => p.playerId === playerId)?.displayName ?? 'Someone'
       const roleLabel = role ? (role.charAt(0).toUpperCase() + role.slice(1)) : 'Unknown'
       useGameStore.getState().addChatMessage({
-        messageId: crypto.randomUUID(),
+        messageId: `eliminated-${playerId}-${round}`,
         senderId: null,
         senderName: 'System',
         text: `⚖️ ${name} was voted out. They were a ${roleLabel}.`,

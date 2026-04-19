@@ -3,12 +3,18 @@ import { useRoomStore } from '@/stores/roomStore'
 import { ROLE_INFO } from '@/types/game'
 import type { Role } from '@/types/game'
 import { usePhaseAutoAdvance } from '@/hooks/usePhaseAutoAdvance'
+import { getPlayerColor } from '@/utils/playerColor'
 
-function SeatCircle({ num }: { num: number | string }) {
+function PlayerAvatar({ playerId, displayName }: { playerId: string; displayName: string }) {
+  const color = getPlayerColor(playerId)
+  const inits = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   return (
-    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full
-      bg-seat-num text-black text-[9px] font-black mx-0.5 align-middle">
-      {num}
+    <span
+      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold flex-shrink-0"
+      style={{ background: `${color}33`, color, border: `1.5px solid ${color}` }}
+      title={displayName}
+    >
+      {inits}
     </span>
   )
 }
@@ -18,27 +24,23 @@ export function DayResultPanel() {
   const dayVotes = useGameStore((s) => s.dayVotes)
   const roles = useGameStore((s) => s.roles)
   const alive = useGameStore((s) => s.alive)
-  const players = useRoomStore((s) => s.players)
+  const gamePlayers = useGameStore((s) => s.players)
+  const roomPlayers = useRoomStore((s) => s.players)
   const phaseEndsAt = useGameStore((s) => s.phaseEndsAt)
   usePhaseAutoAdvance(phaseEndsAt)
 
-  const seatOf = (id: string): number =>
-    players.findIndex(p => p.playerId === id) + 1
+  const playerOf = (id: string) =>
+    gamePlayers.find(p => p.playerId === id) ?? roomPlayers.find(p => p.playerId === id)
 
-  const lynchedPlayer = lynchedId
-    ? players.find(p => p.playerId === lynchedId)
-    : null
-
+  const lynchedPlayer = lynchedId ? playerOf(lynchedId) : null
   const lynchedRole = lynchedId ? (roles[lynchedId] as Role | undefined) : undefined
-  const lynchedSeat = lynchedId ? seatOf(lynchedId) : null
 
   const votesForLynched = Object.entries(dayVotes)
     .filter(([, targetId]) => targetId === lynchedId)
     .map(([voterId]) => voterId)
 
-  const abstainers = players
+  const abstainers = roomPlayers
     .filter(p => alive.includes(p.playerId) && !dayVotes[p.playerId] && p.playerId !== lynchedId)
-    .map(p => p.playerId)
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-4">
@@ -51,12 +53,9 @@ export function DayResultPanel() {
         {lynchedPlayer ? (
           <>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-7 h-7 rounded-full bg-seat-num text-black
-                font-black text-sm flex items-center justify-center flex-shrink-0">
-                {lynchedSeat}
-              </div>
+              <PlayerAvatar playerId={lynchedPlayer.playerId} displayName={lynchedPlayer.displayName} />
               <span className="text-white text-sm">
-                No.{lynchedSeat} has died by vote —{' '}
+                <span className="font-bold">{lynchedPlayer.displayName}</span> was voted out —{' '}
                 <span className="text-action-vote font-bold">
                   {lynchedRole ? (ROLE_INFO[lynchedRole]?.name ?? lynchedRole) : 'Unknown'}
                 </span>
@@ -64,19 +63,20 @@ export function DayResultPanel() {
             </div>
             <div className="space-y-1.5 text-xs text-white/60">
               {votesForLynched.length > 0 && (
-                <div className="flex items-center gap-1 flex-wrap">
-                  <SeatCircle num={lynchedSeat ?? '?'} />
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <PlayerAvatar playerId={lynchedPlayer.playerId} displayName={lynchedPlayer.displayName} />
                   <span className="text-white/40">◀</span>
-                  {votesForLynched.map(id => (
-                    <SeatCircle key={id} num={seatOf(id)} />
-                  ))}
+                  {votesForLynched.map(id => {
+                    const p = playerOf(id)
+                    return p ? <PlayerAvatar key={id} playerId={p.playerId} displayName={p.displayName} /> : null
+                  })}
                 </div>
               )}
-              {abstainers.map(id => (
-                <div key={id} className="flex items-center gap-1">
+              {abstainers.map(p => (
+                <div key={p.playerId} className="flex items-center gap-1.5">
                   <span>✋</span>
-                  <span className="text-white/40">◀</span>
-                  <SeatCircle num={seatOf(id)} />
+                  <PlayerAvatar playerId={p.playerId} displayName={p.displayName} />
+                  <span className="text-white/40 text-[10px]">{p.displayName} abstained</span>
                 </div>
               ))}
             </div>
